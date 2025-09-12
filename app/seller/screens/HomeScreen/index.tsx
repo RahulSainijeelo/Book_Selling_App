@@ -5,7 +5,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import OrderItem from '../../components/OrderItem';
 
 type SellerStackParamList = {
-  OrderDetails: { orderId: number; title: string };
+  "Order Details": { orderId: number; title: string };
 };
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<SellerStackParamList>;
@@ -28,7 +28,7 @@ export default function SellerHomeScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
 
   const handleOrderPress = (order: Order) => {
-    navigation.navigate('OrderDetails', { orderId: order.id, title: order.title });
+    navigation.navigate('Order Details', { orderId: order.id, title: order.title });
   };
 
   const renderOrder = ({ item }: { item: Order }) => (
