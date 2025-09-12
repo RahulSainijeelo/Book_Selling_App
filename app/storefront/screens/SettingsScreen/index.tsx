@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Switch, TouchableOpacity } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-
+import {Ionicons} from '@react-native-vector-icons/ionicons';
 export default function SettingsScreen() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
@@ -16,7 +15,7 @@ export default function SettingsScreen() {
     onSwitchChange,
     onPress 
   }: {
-    icon: string;
+    icon: any;
     title: string;
     subtitle?: string;
     hasSwitch?: boolean;

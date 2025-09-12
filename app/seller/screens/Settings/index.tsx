@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Switch, TouchableOpacity, ScrollView } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import {Ionicons} from '@react-native-vector-icons/ionicons';
 import Profile from '../../components/Profile';
 export default function SettingsScreen() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
@@ -16,7 +16,7 @@ export default function SettingsScreen() {
     onSwitchChange,
     onPress 
   }: {
-    icon: string;
+    icon: any;
     title: string;
     subtitle?: string;
     hasSwitch?: boolean;
@@ -47,7 +47,6 @@ export default function SettingsScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.sectionHeader}>Profile</Text>
       <View>
         <Profile/>
       </View>
