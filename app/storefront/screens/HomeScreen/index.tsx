@@ -32,12 +32,12 @@ interface Book {
 }
 
 const categories = [
-  { id: 1, name: 'Fiction', icon: '📚', color: '#FF6B6B' },
-  { id: 2, name: 'Programming', icon: '💻', color: '#4ECDC4' },
-  { id: 3, name: 'Science', icon: '🔬', color: '#45B7D1' },
-  { id: 4, name: 'History', icon: '🏛️', color: '#96CEB4' },
-  { id: 5, name: 'Biography', icon: '👤', color: '#FECA57' },
-  { id: 6, name: 'Self-Help', icon: '🧠', color: '#FF9FF3' },
+  { id: 1, name: 'Fiction', color: '#FF6B6B' },
+  { id: 2, name: 'Programming', color: '#4ECDC4' },
+  { id: 3, name: 'Science', color: '#45B7D1' },
+  { id: 4, name: 'History', color: '#96CEB4' },
+  { id: 5, name: 'Biography', color: '#FECA57' },
+  { id: 6, name: 'Self-Help', color: '#FF9FF3' },
 ];
 
 export const mockBooks: Book[] = [
@@ -142,7 +142,7 @@ export default function UserHomeScreen() {
     <TouchableOpacity 
       style={[styles.bookCard, style]} 
       activeOpacity={0.8}
-      onPress={() => navigation.navigate('BookDetails', { bookId: book.id })}
+      onPress={() => navigation.navigate('Book Details', { bookId: book.id })}
     >
       <View style={styles.bookImageContainer}>
         <Image source={{ uri: book.coverUrl }} style={styles.bookImage} />
@@ -269,7 +269,6 @@ export default function UserHomeScreen() {
                 style={[styles.categoryItem, selectedCategory === 'All' && styles.categoryItemActive]}
                 onPress={() => setSelectedCategory('All')}
               >
-                <Text style={styles.categoryIcon}>📚</Text>
                 <Text style={[styles.categoryName, selectedCategory === 'All' && styles.categoryNameActive]}>All</Text>
               </TouchableOpacity>
               {categories.map((category) => (
@@ -278,13 +277,21 @@ export default function UserHomeScreen() {
                   style={[styles.categoryItem, selectedCategory === category.name && styles.categoryItemActive]}
                   onPress={() => setSelectedCategory(category.name)}
                 >
-                  <Text style={styles.categoryIcon}>{category.icon}</Text>
                   <Text style={[styles.categoryName, selectedCategory === category.name && styles.categoryNameActive]}>
                     {category.name}
                   </Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
+             <View style={styles.booksGrid}>
+              {filteredBooks.slice(0, 6).map((book, index) => (
+                <BookCard 
+                  key={book.id} 
+                  book={book} 
+                  style={[styles.gridBookCard, { marginRight: index % 2 === 0 ? 8 : 0 }]}
+                />
+              ))}
+            </View>
           </View>
 
           {/* New Releases */}
@@ -292,7 +299,7 @@ export default function UserHomeScreen() {
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>New Releases</Text>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={()=>{navigation.navigate("See All","Fiction")}}>
                   <Text style={styles.seeAllText}>See All</Text>
                 </TouchableOpacity>
               </View>
@@ -311,23 +318,15 @@ export default function UserHomeScreen() {
           )}
 
           {/* Popular Books */}
-          <View style={styles.section}>
+          {/* <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Popular Now</Text>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={()=>{navigation.navigate("See All","all")}}>
                 <Text style={styles.seeAllText}>See All</Text>
               </TouchableOpacity>
             </View>
-            <View style={styles.booksGrid}>
-              {filteredBooks.slice(0, 6).map((book, index) => (
-                <BookCard 
-                  key={book.id} 
-                  book={book} 
-                  style={[styles.gridBookCard, { marginRight: index % 2 === 0 ? 8 : 0 }]}
-                />
-              ))}
-            </View>
-          </View>
+           <Text>Hello</Text>
+          </View> */}
 
           <View style={{ height: 1 }} />
         </View>
@@ -565,13 +564,13 @@ const styles = StyleSheet.create({
   // Categories
   categoriesScroll: {
     padding: 4,
+    marginBottom:20
   },
   categoryItem: {
     alignItems: 'center',
-    marginRight: 20,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 20,
+    padding:10,
+    marginRight: 10,
+    borderRadius: 7,
     backgroundColor: '#fff',
     minWidth: 80,
     shadowColor: '#000',
@@ -584,19 +583,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#6200ea',
     transform: [{ scale: 1.05 }],
   },
-  categoryIcon: {
-    fontSize: 24,
-    marginBottom: 8,
-  },
   categoryName: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '600',
     color: '#666',
   },
   categoryNameActive: {
     color: '#fff',
   },
-  // Book Lists
   horizontalList: {
     flexDirection: 'row',
   },

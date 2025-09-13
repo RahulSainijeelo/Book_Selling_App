@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Switch, TouchableOpacity } from 'react-native';
+import { ScrollView, View,Text, StyleSheet, Switch, TouchableOpacity, Button, Image } from 'react-native';
 import {Ionicons} from '@react-native-vector-icons/ionicons';
+import Profile from '../../components/Profile';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { TabParamList } from '../../navigation/AppNavigator';
+type SettingsNavigationProp = NativeStackNavigationProp<TabParamList>;
+
 export default function SettingsScreen() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
   const [locationEnabled, setLocationEnabled] = useState(true);
-
+  const navigation = useNavigation<SettingsNavigationProp>();
   const SettingsItem = ({ 
     icon, 
     title, 
@@ -45,18 +51,34 @@ export default function SettingsScreen() {
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.sectionHeader}>Preferences</Text>
-      
-      <SettingsItem
-        icon="notifications"
-        title="Push Notifications"
-        subtitle="Receive app notifications"
-        hasSwitch
-        switchValue={notificationsEnabled}
-        onSwitchChange={setNotificationsEnabled}
+    <ScrollView style={styles.container}>
+      <Profile/>
+      <Text style={styles.sectionHeader}>Account</Text>
+        <SettingsItem
+        icon="person-circle"
+        title="Your Orders"
+        subtitle="Check Your Orders"
+        onPress={() => {navigation.navigate("Your Orders")}}
       />
-      
+      <SettingsItem
+        icon="person-circle"
+        title="Favorites"
+        subtitle="Check Your Orders"
+        onPress={() => {navigation.navigate("Favorites")}}
+      />
+      <SettingsItem
+        icon="person-circle"
+        title="Account Settings"
+        subtitle="Manage your account"
+        onPress={() => console.log('Account Settings pressed')}
+      />
+      <SettingsItem
+        icon="help-circle"
+        title="Help & Support"
+        subtitle="Get help and contact us"
+        onPress={() => console.log('Help pressed')}
+      />
+       <Text style={styles.sectionHeader}>Preferences</Text>      
       <SettingsItem
         icon="moon"
         title="Dark Mode"
@@ -65,39 +87,7 @@ export default function SettingsScreen() {
         switchValue={darkModeEnabled}
         onSwitchChange={setDarkModeEnabled}
       />
-      
-      <SettingsItem
-        icon="location"
-        title="Location Services"
-        subtitle="Allow location access"
-        hasSwitch
-        switchValue={locationEnabled}
-        onSwitchChange={setLocationEnabled}
-      />
-
-      <Text style={styles.sectionHeader}>Account</Text>
-      
-      <SettingsItem
-        icon="person-circle"
-        title="Account Settings"
-        subtitle="Manage your account"
-        onPress={() => console.log('Account Settings pressed')}
-      />
-      
-      <SettingsItem
-        icon="lock-closed"
-        title="Privacy & Security"
-        subtitle="Control your privacy"
-        onPress={() => console.log('Privacy Settings pressed')}
-      />
-      
-      <SettingsItem
-        icon="help-circle"
-        title="Help & Support"
-        subtitle="Get help and contact us"
-        onPress={() => console.log('Help pressed')}
-      />
-    </View>
+    </ScrollView>
   );
 }
 

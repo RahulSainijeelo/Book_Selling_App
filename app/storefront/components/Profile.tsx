@@ -1,46 +1,43 @@
 import React from 'react';
-import { View, Text, StyleSheet, Button, Image } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from "../../navigation/AppNavigator"
+import { useNavigation } from '@react-navigation/native';
+import { TabParamList } from '../navigation/AppNavigator';
+import { Button, Image, StyleSheet, Text, View } from 'react-native';
+type ProfileScreenNavigationProp = NativeStackNavigationProp<TabParamList>;
 
-type ProfileScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
-
-export default function ProfileScreen() {
+export default function Profile(){
   const navigation = useNavigation<ProfileScreenNavigationProp>();
 
   const handleEditProfile = () => {
-    navigation.navigate('EditProfile', {
+    navigation.navigate('Edit Profile', {
       userId: 123,
       currentName: 'John Doe',
-    });
-  };
-
-  return (
-    <View style={styles.container}>
-      <View style={styles.profileCard}>
+    })};
+  return(
+    <View style={styles2.container}>
+      <View style={styles2.profileCard}>
         <Image
           source={{ uri: 'https://via.placeholder.com/120/6200ea/ffffff?text=JD' }}
-          style={styles.avatar}
+          style={styles2.avatar}
         />
-        <Text style={styles.name}>John Doe</Text>
-        <Text style={styles.email}>john.doe@example.com</Text>
-        <Text style={styles.bio}>
+        <Text style={styles2.name}>John Doe</Text>
+        <Text style={styles2.email}>john.doe@example.com</Text>
+        <Text style={styles2.bio}>
           React Native developer passionate about creating amazing mobile experiences.
         </Text>
         
-        <View style={styles.statsContainer}>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>42</Text>
-            <Text style={styles.statLabel}>Projects</Text>
+        <View style={styles2.statsContainer}>
+          <View style={styles2.statItem}>
+            <Text style={styles2.statNumber}>42</Text>
+            <Text style={styles2.statLabel}>Projects</Text>
           </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>1.2k</Text>
-            <Text style={styles.statLabel}>Followers</Text>
+          <View style={styles2.statItem}>
+            <Text style={styles2.statNumber}>1.2k</Text>
+            <Text style={styles2.statLabel}>Followers</Text>
           </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>256</Text>
-            <Text style={styles.statLabel}>Following</Text>
+          <View style={styles2.statItem}>
+            <Text style={styles2.statNumber}>256</Text>
+            <Text style={styles2.statLabel}>Following</Text>
           </View>
         </View>
 
@@ -51,10 +48,10 @@ export default function ProfileScreen() {
         />
       </View>
     </View>
-  );
+  )
 }
 
-const styles = StyleSheet.create({
+const styles2 = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
@@ -114,4 +111,4 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 4,
   },
-});
+})
