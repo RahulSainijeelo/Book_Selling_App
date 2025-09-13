@@ -6,6 +6,7 @@ import SearchScreen from "../screens/HomeScreen/SearchScreen";
 import EditProfileScreen from "../screens/SettingsScreen/EditProfileScreen"
 import YourOrdersScreen from "../screens/SettingsScreen/YourOrders";
 import OrderDetailsScreen from "../screens/SettingsScreen/YourOrders/OrderDetails";
+import FavoritesScreen from "../screens/SettingsScreen/FavoritesScreen";
 export type TabParamList = {
     TabNavigator: undefined
     "Book Details": any
@@ -14,6 +15,7 @@ export type TabParamList = {
     "Edit Profile":any
     "Your Orders":any
     "Order Details":any
+    "Favorites":any
 };
 
 const Stack = createNativeStackNavigator<TabParamList>()
@@ -40,12 +42,14 @@ export default function AppNavigator() {
             <Stack.Screen
                 name="Your Orders"
                 component={YourOrdersScreen}
-                options={{ headerShown: false }}
             />
             <Stack.Screen
                 name="Order Details"
                 component={OrderDetailsScreen}
-                options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name="Favorites"
+                component={FavoritesScreen}
             />
         </Stack.Navigator>
     )

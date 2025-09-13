@@ -1,15 +1,14 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import SignInScreen from './app/shared/screens/sign-in';
 import UserNavigator from './app/storefront/navigation/AppNavigator';
 import SellerNavigator from './app/seller/navigation/AppNavigator';
 import { useAuthStore } from './app/shared/store/useAuthStore';
-
+import AppNavigator from './app/shared/navigation/AppNavigator';
 function RootNavigator() {
   const { isLoggedIn, role } = useAuthStore();
 
   if (!isLoggedIn) {
-    return <SignInScreen />;
+    return <AppNavigator/>;
   }
 
   if (role === 'seller') {

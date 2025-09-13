@@ -166,8 +166,6 @@ export default function OrderDetailsScreen() {
   const navigation = useNavigation<OrdersDetailsNavigationProp>();
   const route = useRoute<OrderDetailsRouteProp>();
   // const { orderId } = route.params;
-
-  // In real app, fetch order details based on orderId
   const order = mockOrderDetails;
 
   const handleCancelOrder = () => {
@@ -217,9 +215,6 @@ export default function OrderDetailsScreen() {
           <Text style={styles.trackingNumber}>
             Tracking: {order.trackingNumber} ({order.carrier})
           </Text>
-          <TouchableOpacity style={styles.trackButton} onPress={handleTrackPackage}>
-            <Text style={styles.trackButtonText}>Track Package</Text>
-          </TouchableOpacity>
         </View>
       )}
       <View style={styles.trackingTimeline}>
@@ -265,22 +260,15 @@ export default function OrderDetailsScreen() {
     <>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Ionicons name="arrow-back" size={24} color="#333" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Order Details</Text>
-          <TouchableOpacity style={styles.shareButton}>
-            <Ionicons name="share-outline" size={24} color="#333" />
-          </TouchableOpacity>
-        </View>
-
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           {/* Order Summary */}
+          {/* Items */}
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Items ({order.items.length})</Text>
+            {order.items.map((item) => (
+              <OrderItemComponent key={item.id} item={item} />
+            ))}
+          </View>
           <View style={styles.card}>
             <View style={styles.orderSummaryHeader}>
               <View>
@@ -300,15 +288,6 @@ export default function OrderDetailsScreen() {
 
           {/* Tracking */}
           <TrackingComponent />
-
-          {/* Items */}
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Items ({order.items.length})</Text>
-            {order.items.map((item) => (
-              <OrderItemComponent key={item.id} item={item} />
-            ))}
-          </View>
-
           {/* Pricing */}
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Pricing Details</Text>

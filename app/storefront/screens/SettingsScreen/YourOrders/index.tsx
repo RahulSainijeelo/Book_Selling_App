@@ -162,18 +162,6 @@ export default function YourOrdersScreen() {
     <>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Ionicons name="arrow-back" size={24} color="#333" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Your Orders</Text>
-          <View style={styles.headerSpacer} />
-        </View>
-
         {/* Filter Tabs */}
         <View style={styles.filterContainer}>
           {statusFilters.map((filter) => (

@@ -9,6 +9,7 @@ import {
   StatusBar,
   Alert,
   Dimensions,
+  ScrollView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { TabParamList } from '../../navigation/AppNavigator';
@@ -268,17 +269,17 @@ export default function CartScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Cart Items */}
-            <FlatList
+           <ScrollView>
+             {/* Order Summary */}
+             <FlatList
               data={cartItems}
               keyExtractor={(item) => item.id.toString()}
               renderItem={({ item }) => <CartItemComponent item={item} />}
               contentContainerStyle={styles.listContainer}
               showsVerticalScrollIndicator={false}
             />
-
-            {/* Order Summary */}
             <OrderSummary />
+           </ScrollView>
           </>
         )}
 

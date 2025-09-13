@@ -62,6 +62,12 @@ export default function SettingsScreen() {
       />
       <SettingsItem
         icon="person-circle"
+        title="Favorites"
+        subtitle="Check Your Orders"
+        onPress={() => {navigation.navigate("Favorites")}}
+      />
+      <SettingsItem
+        icon="person-circle"
         title="Account Settings"
         subtitle="Manage your account"
         onPress={() => console.log('Account Settings pressed')}
