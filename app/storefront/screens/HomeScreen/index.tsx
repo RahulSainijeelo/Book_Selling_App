@@ -142,7 +142,7 @@ export default function UserHomeScreen() {
     <TouchableOpacity 
       style={[styles.bookCard, style]} 
       activeOpacity={0.8}
-      onPress={() => navigation.navigate('BookDetails', { bookId: book.id })}
+      onPress={() => navigation.navigate('Book Details', { bookId: book.id })}
     >
       <View style={styles.bookImageContainer}>
         <Image source={{ uri: book.coverUrl }} style={styles.bookImage} />
@@ -292,7 +292,7 @@ export default function UserHomeScreen() {
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>New Releases</Text>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={()=>{navigation.navigate("See All","Fiction")}}>
                   <Text style={styles.seeAllText}>See All</Text>
                 </TouchableOpacity>
               </View>
@@ -314,7 +314,7 @@ export default function UserHomeScreen() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Popular Now</Text>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={()=>{navigation.navigate("See All","all")}}>
                 <Text style={styles.seeAllText}>See All</Text>
               </TouchableOpacity>
             </View>

@@ -2,7 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import {Ionicons} from '@react-native-vector-icons/ionicons';
 import HomeScreen from '../screens/HomeScreen';
-import ProfileScreen from '../screens/ProfileScreen';
+import ProfileScreen from '../screens/CartScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 
 export type TabParamList = {
