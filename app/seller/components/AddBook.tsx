@@ -10,8 +10,11 @@ import {
   Keyboard,
   ScrollView,
   Alert,
+  Image,
 } from 'react-native';
-import {Ionicons} from '@react-native-vector-icons/ionicons';
+import { Ionicons } from '@react-native-vector-icons/ionicons';
+import { launchImageLibrary, ImagePickerResponse } from 'react-native-image-picker';
+import { useImgBBUpload } from '../hooks/useImgBBUpload';
 
 interface Book {
   title: string;
@@ -37,6 +40,10 @@ export default function AddBookDrawer({ visible, onClose, onAddBook }: AddBookDr
   const [coverUrl, setCoverUrl] = useState('');
   const [stock, setStock] = useState('');
   const [category, setCategory] = useState('Programming');
+  const [uploadError, setUploadError] = useState('');
+
+  // Use the ImgBB upload hook
+  const { uploadImage, uploading, progress } = useImgBBUpload();
 
   const clearForm = () => {
     setTitle('');
@@ -45,6 +52,7 @@ export default function AddBookDrawer({ visible, onClose, onAddBook }: AddBookDr
     setCoverUrl('');
     setStock('');
     setCategory('Programming');
+    setUploadError('');
   };
 
   const handleClose = () => {
@@ -84,6 +92,46 @@ export default function AddBookDrawer({ visible, onClose, onAddBook }: AddBookDr
     clearForm();
   };
 
+  const selectAndUploadImage = () => {
+    const options = {
+      mediaType: 'photo' as const,
+      quality: 0.8,
+      maxWidth: 800,
+      maxHeight: 1200,
+    };
+
+    launchImageLibrary(options, (response: ImagePickerResponse) => {
+      if (response.didCancel || response.errorMessage) {
+        return;
+      }
+
+      if (response.assets && response.assets[0]) {
+        const imageUri = response.assets[0].uri;
+        if (imageUri) {
+          setUploadError('');
+          uploadImage(
+            imageUri,
+            // onSuccess callback
+            (data:any) => {
+              setCoverUrl(data.url);
+              Alert.alert('Success', 'Image uploaded successfully!');
+            },
+            // onError callback
+            (error:any) => {
+              setUploadError(error);
+              Alert.alert('Upload Error', error);
+            }
+          );
+        }
+      }
+    });
+  };
+
+  const removeImage = () => {
+    setCoverUrl('');
+    setUploadError('');
+  };
+
   return (
     <Modal
       visible={visible}
@@ -95,6 +143,7 @@ export default function AddBookDrawer({ visible, onClose, onAddBook }: AddBookDr
         <View style={styles.modalOverlay}>
           <View style={styles.drawer}>
             <View style={styles.handle} />
+            
             <View style={styles.header}>
               <Text style={styles.title}>Add New Book</Text>
               <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
@@ -103,6 +152,7 @@ export default function AddBookDrawer({ visible, onClose, onAddBook }: AddBookDr
             </View>
 
             <ScrollView style={styles.form} showsVerticalScrollIndicator={false}>
+              {/* Title Input */}
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>Book Title *</Text>
                 <TextInput
@@ -114,6 +164,7 @@ export default function AddBookDrawer({ visible, onClose, onAddBook }: AddBookDr
                 />
               </View>
 
+              {/* Author Input */}
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>Author *</Text>
                 <TextInput
@@ -125,6 +176,7 @@ export default function AddBookDrawer({ visible, onClose, onAddBook }: AddBookDr
                 />
               </View>
 
+              {/* Price and Stock Row */}
               <View style={styles.row}>
                 <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
                   <Text style={styles.label}>Price *</Text>
@@ -150,6 +202,7 @@ export default function AddBookDrawer({ visible, onClose, onAddBook }: AddBookDr
                 </View>
               </View>
 
+              {/* Category Selection */}
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>Category</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -173,24 +226,80 @@ export default function AddBookDrawer({ visible, onClose, onAddBook }: AddBookDr
                 </ScrollView>
               </View>
 
+              {/* Image Upload Section */}
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>Cover Image URL (Optional)</Text>
+                <Text style={styles.label}>Cover Image</Text>
+                
+                {/* Image Preview */}
+                {coverUrl ? (
+                  <View style={styles.imagePreviewContainer}>
+                    <Image source={{ uri: coverUrl }} style={styles.imagePreview} />
+                    <TouchableOpacity 
+                      style={styles.removeImageButton} 
+                      onPress={removeImage}
+                    >
+                      <Ionicons name="close-circle" size={24} color="#ff4757" />
+                    </TouchableOpacity>
+                  </View>
+                ) : null}
+
+                {/* Upload Progress Bar */}
+                {uploading && (
+                  <View style={styles.progressContainer}>
+                    <View style={styles.progressBar}>
+                      <View 
+                        style={[styles.progressFill, { width: `${progress}%` }]} 
+                      />
+                    </View>
+                    <Text style={styles.progressText}>{progress}%</Text>
+                  </View>
+                )}
+
+                {/* Upload Button */}
+                <TouchableOpacity 
+                  style={[styles.uploadButton, uploading && styles.uploadButtonDisabled]}
+                  onPress={selectAndUploadImage}
+                  disabled={uploading}
+                >
+                  <Ionicons name="cloud-upload-outline" size={20} color="#fff" />
+                  <Text style={styles.uploadButtonText}>
+                    {uploading ? 'Uploading...' : 'Select & Upload Image'}
+                  </Text>
+                </TouchableOpacity>
+
+                {/* Manual URL Input */}
+                <View style={styles.orDivider}>
+                  <View style={styles.dividerLine} />
+                  <Text style={styles.orText}>OR</Text>
+                  <View style={styles.dividerLine} />
+                </View>
+
                 <TextInput
                   style={styles.input}
-                  placeholder="https://example.com/book-cover.jpg"
+                  placeholder="Enter image URL manually"
                   value={coverUrl}
                   onChangeText={setCoverUrl}
                   placeholderTextColor="#999"
                   autoCapitalize="none"
                 />
+
+                {/* Upload Error */}
+                {uploadError ? (
+                  <Text style={styles.errorText}>{uploadError}</Text>
+                ) : null}
               </View>
             </ScrollView>
 
+            {/* Action Buttons */}
             <View style={styles.buttonContainer}>
               <TouchableOpacity style={styles.cancelButton} onPress={handleClose}>
                 <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.addButton} onPress={handleAddBook}>
+              <TouchableOpacity 
+                style={[styles.addButton, uploading && styles.addButtonDisabled]} 
+                onPress={handleAddBook}
+                disabled={uploading}
+              >
                 <Text style={styles.addButtonText}>Add Book</Text>
               </TouchableOpacity>
             </View>
@@ -289,6 +398,89 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '600',
   },
+  // Image Upload Styles
+  imagePreviewContainer: {
+    alignSelf: 'center',
+    marginBottom: 16,
+    position: 'relative',
+  },
+  imagePreview: {
+    width: 120,
+    height: 160,
+    borderRadius: 12,
+    backgroundColor: '#f0f0f0',
+  },
+  removeImageButton: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+  },
+  progressContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  progressBar: {
+    flex: 1,
+    height: 4,
+    backgroundColor: '#e9ecef',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#6200ea',
+  },
+  progressText: {
+    marginLeft: 8,
+    fontSize: 12,
+    color: '#666',
+    fontWeight: '600',
+  },
+  uploadButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#6200ea',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  uploadButtonDisabled: {
+    opacity: 0.6,
+  },
+  uploadButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  orDivider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 16,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#e9ecef',
+  },
+  orText: {
+    marginHorizontal: 16,
+    fontSize: 14,
+    color: '#999',
+    fontWeight: '500',
+  },
+  errorText: {
+    marginTop: 8,
+    fontSize: 14,
+    color: '#ff4757',
+    textAlign: 'center',
+    fontWeight: '500',
+  },
   buttonContainer: {
     flexDirection: 'row',
     paddingHorizontal: 20,
@@ -315,6 +507,9 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
+  },
+  addButtonDisabled: {
+    opacity: 0.6,
   },
   addButtonText: {
     fontSize: 16,

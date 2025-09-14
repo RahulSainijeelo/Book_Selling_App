@@ -7,21 +7,38 @@ import {
   TouchableOpacity,
   StatusBar,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { jwtDecode } from 'jwt-decode';
+import api from '../../../services/api.service';
+import { useAuthStore } from "../../store/useAuthStore";
 
+interface JWTPayload {
+  id: string;
+  iat: number;
+  exp: number;
+  name?: string;
+  email?: string;
+  role?: string;
+  [key: string]: any;
+}
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<any>;
+
 export default function LoginScreen() {
   const navigation = useNavigation<LoginScreenNavigationProp>();
+  const { loginUser, setIsLoading: setStoreLoading } = useAuthStore();
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async () => {
+    // Validation
     if (!email.trim() || !password.trim()) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
@@ -33,15 +50,174 @@ export default function LoginScreen() {
     }
 
     setIsLoading(true);
-    setTimeout(() => {
+    setStoreLoading(true);
+
+    try {
+      console.log('Attempting to login user...');
+      
+      const loginData = {
+        email: email.trim().toLowerCase(),
+        password: password.trim(),
+      };
+
+      console.log('Login data:', { ...loginData, password: '[HIDDEN]' });
+
+      const response = await api.post('/api/auth/login', loginData);
+
+      console.log('Login response:', response.data);
+
+      if (response.status === 200 || response.status === 201) {
+        const { id, name, email: userEmail, token } = response.data;
+
+        if (!token) {
+          throw new Error('Token not found in response');
+        }
+
+        try {
+          // Decode JWT token to extract all information
+          const decodedToken: JWTPayload = jwtDecode(token);
+          
+          console.log('Decoded JWT token:', decodedToken);
+          
+          // Check if token is expired
+          const currentTime = Date.now() / 1000;
+          if (decodedToken.exp && decodedToken.exp < currentTime) {
+            throw new Error('Token is expired');
+          }
+          
+          // Extract user information from both response and decoded token
+          const user = {
+            id: decodedToken.id || id,
+            name: name || decodedToken.name || '',
+            email: userEmail || decodedToken.email || email.trim(),
+            role: (decodedToken.role || 'user'),
+            
+            // Additional fields from token if present
+            ...(decodedToken.avatar && { avatar: decodedToken.avatar }),
+            ...(decodedToken.permissions && { permissions: decodedToken.permissions }),
+            
+            // Token timing info
+            tokenIssuedAt: decodedToken.iat ? new Date(decodedToken.iat * 1000).toISOString() : null,
+            tokenExpiresAt: decodedToken.exp ? new Date(decodedToken.exp * 1000).toISOString() : null,
+          };
+
+          console.log('Constructed user object:', user);
+
+          // Store user and token in zustand store
+          loginUser(user, token);
+
+          // Show success message
+          const expiryDate = decodedToken.exp 
+            ? new Date(decodedToken.exp * 1000).toLocaleDateString() 
+            : 'No expiry';
+
+          Alert.alert(
+            'Welcome Back! 👋', 
+            `Successfully logged in as ${user.name}\n\nToken expires: ${expiryDate}`,
+            [
+              {
+                text: 'Continue',
+                onPress: () => {
+                  // Navigate to main app
+                  navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'MainApp' }],
+                  });
+                }
+              }
+            ]
+          );
+
+        } catch (decodeError) {
+          console.error('JWT decode error:', decodeError);
+          const fallbackUser:any = {
+            id,
+            name,
+            email: userEmail,
+            role: 'user',
+          };
+
+          loginUser(fallbackUser, token);
+          
+          Alert.alert(
+            'Welcome Back! 👋', 
+            `Successfully logged in as ${name}`,
+            [
+              {
+                text: 'Continue',
+                onPress: () => {
+                  navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'MainApp' }],
+                  });
+                }
+              }
+            ]
+          );
+        }
+
+      } else {
+        throw new Error('Unexpected response status');
+      }
+
+    } catch (error: any) {
+      console.error('Login error:', error);
+      
+      let errorMessage = 'Login failed. Please try again.';
+      
+      if (error.response) {
+        const { status, data } = error.response;
+        
+        switch (status) {
+          case 400:
+            errorMessage = data.message || data.error || 'Invalid credentials';
+            break;
+          case 401:
+            errorMessage = 'Invalid email or password. Please check your credentials.';
+            break;
+          case 403:
+            errorMessage = 'Account access denied. Please contact support.';
+            break;
+          case 404:
+            errorMessage = 'Account not found. Please check your email or sign up.';
+            break;
+          case 429:
+            errorMessage = 'Too many login attempts. Please try again later.';
+            break;
+          case 500:
+            errorMessage = 'Server error. Please try again later.';
+            break;
+          default:
+            errorMessage = data.message || data.error || `Error ${status}: Login failed`;
+        }
+        
+      } else if (error.request) {
+        errorMessage = 'Network error. Please check your connection and try again.';
+      } else {
+        errorMessage = error.message || 'An unexpected error occurred';
+      }
+
+      Alert.alert('Login Failed', errorMessage);
+      
+    } finally {
       setIsLoading(false);
-      Alert.alert('Success', 'Login successful!');
-    }, 2000);
+      setStoreLoading(false);
+    }
   };
 
   const isValidEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
+  };
+
+  const handleForgotPassword = () => {
+    Alert.alert(
+      'Forgot Password',
+      'Password reset functionality will be implemented soon.',
+      [
+        { text: 'OK' }
+      ]
+    );
   };
 
   return (
@@ -71,31 +247,37 @@ export default function LoginScreen() {
           {/* Email Input */}
           <View style={styles.inputContainer}>
             <TextInput
-              style={styles.input}
-              placeholder="nicholas@engema.com"
+              style={[styles.input, !isValidEmail(email) && email.length > 0 && styles.inputError]}
+              placeholder="Enter your email"
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
               placeholderTextColor="#999"
+              editable={!isLoading}
             />
+            {email.length > 0 && isValidEmail(email) && (
+              <Ionicons name="checkmark-circle" size={20} color="#2ed573" style={styles.inputIcon} />
+            )}
           </View>
 
           {/* Password Input */}
           <View style={styles.inputContainer}>
             <TextInput
               style={[styles.input, styles.passwordInput]}
-              placeholder="Password"
+              placeholder="Enter your password"
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
               autoCapitalize="none"
               placeholderTextColor="#999"
+              editable={!isLoading}
             />
             <TouchableOpacity
               style={styles.eyeButton}
               onPress={() => setShowPassword(!showPassword)}
+              disabled={isLoading}
             >
               <Ionicons
                 name={showPassword ? 'eye-outline' : 'eye-off-outline'}
@@ -111,13 +293,22 @@ export default function LoginScreen() {
             onPress={handleLogin}
             disabled={isLoading}
           >
-            <Text style={styles.signInButtonText}>
-              {isLoading ? 'Signing In...' : 'Sign In'}
-            </Text>
+            {isLoading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="small" color="#fff" />
+                <Text style={styles.signInButtonText}>Signing In...</Text>
+              </View>
+            ) : (
+              <Text style={styles.signInButtonText}>Sign In</Text>
+            )}
           </TouchableOpacity>
 
           {/* Forgot Password */}
-          <TouchableOpacity style={styles.forgotPasswordButton}>
+          <TouchableOpacity 
+            style={styles.forgotPasswordButton}
+            onPress={handleForgotPassword}
+            disabled={isLoading}
+          >
             <Text style={styles.forgotPasswordText}>Forgot your password?</Text>
           </TouchableOpacity>
         </View>
@@ -138,9 +329,6 @@ const styles = StyleSheet.create({
     paddingTop: 50,
     paddingHorizontal: 20,
     paddingBottom: 20,
-  },
-  backButton: {
-    padding: 8,
   },
   headerRight: {
     flexDirection: 'row',
@@ -201,6 +389,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e9ecef',
   },
+  inputError: {
+    borderColor: '#ff4757',
+  },
+  inputIcon: {
+    position: 'absolute',
+    right: 16,
+    top: 16,
+  },
   passwordInput: {
     paddingRight: 50,
   },
@@ -229,6 +425,10 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   forgotPasswordButton: {
     alignItems: 'center',
