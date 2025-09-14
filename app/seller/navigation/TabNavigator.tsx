@@ -7,7 +7,7 @@ import SettingsScreen from '../screens/Settings';
 
 export type TabParamList = {
   Home: undefined;
-  Product: undefined;
+  Products: undefined;
   Settings: undefined;
 };
 
@@ -22,7 +22,7 @@ export default function TabNavigator() {
 
           if (route.name === 'Home') {
             iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'Profile') {
+          } else if (route.name === 'Products') {
             iconName = focused ? 'book' : 'book-outline';
           } else if (route.name === 'Settings') {
             iconName = focused ? 'settings' : 'settings-outline';
@@ -35,7 +35,7 @@ export default function TabNavigator() {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Product" component={ProfileScreen} />
+      <Tab.Screen name="Products" component={ProfileScreen} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );
