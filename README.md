@@ -29,7 +29,7 @@ With Metro running, open a new terminal window/pane from the root of your React 
 npm react-native run-android
 
 # OR using Yarn
-yarn android
+yarn react-native run-android
 ```
 
 ### iOS
