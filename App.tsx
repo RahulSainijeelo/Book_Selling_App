@@ -11,7 +11,7 @@ function RootNavigator() {
     return <AppNavigator/>;
   }
 
-  if (user?.role === 'seller') {
+  if (user?.role === 'SELLER') {
     return <SellerNavigator />;
   } else {
     return <UserNavigator />;

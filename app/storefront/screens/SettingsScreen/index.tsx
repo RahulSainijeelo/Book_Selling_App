@@ -4,9 +4,14 @@ import { Ionicons } from '@react-native-vector-icons/ionicons';
 import Profile from '../../components/Profile';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { TabParamList } from '../../navigation/AppNavigator';
+import styles from './styles';
 import { useAuthStore } from '../../../shared/store/useAuthStore'; // Import the auth store
-
+type TabParamList = {
+    Login: any
+    Register:any
+    "Your Orders":any,
+    "Favorites":any
+}
 type SettingsNavigationProp = NativeStackNavigationProp<TabParamList>;
 
 export default function SettingsScreen() {
@@ -14,8 +19,6 @@ export default function SettingsScreen() {
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
   const [locationEnabled, setLocationEnabled] = useState(true);
   const navigation = useNavigation<SettingsNavigationProp>();
-  
-  // Get logout function and user data from auth store
   const { logout, user } = useAuthStore();
 
   const SettingsItem = ({ 
@@ -88,18 +91,11 @@ export default function SettingsScreen() {
           style: 'destructive',
           onPress: () => {
             console.log('User logging out...');
-            
-            // Clear user data and token from zustand store
             logout();
-            
-            // Navigate to login screen and reset navigation stack
             navigation.reset({
               index: 0,
               routes: [{ name: 'Login' }]
             });
-            
-            // Optional: Show logout success message
-            // Alert.alert('Logged Out', 'You have been successfully logged out.');
           }
         }
       ]
@@ -153,8 +149,6 @@ export default function SettingsScreen() {
         switchValue={notificationsEnabled}
         onSwitchChange={setNotificationsEnabled}
       />
-
-      {/* Logout Section */}
       <Text style={styles.sectionHeader}>Account Actions</Text>
       <SettingsItem
         icon="log-out-outline"
@@ -169,53 +163,3 @@ export default function SettingsScreen() {
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  sectionHeader: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    marginTop: 20,
-    marginBottom: 12,
-    marginHorizontal: 16,
-  },
-  settingsItem: {
-    backgroundColor: '#fff',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    marginHorizontal: 16,
-    marginVertical: 2,
-    borderRadius: 8,
-  },
-  settingsItemLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  settingsItemText: {
-    marginLeft: 16,
-    flex: 1,
-  },
-  settingsItemTitle: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#333',
-  },
-  settingsItemSubtitle: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 2,
-  },
-  destructiveText: {
-    color: '#ff4757',
-  },
-  destructiveSubtitle: {
-    color: '#ff6b7a',
-  },
-});

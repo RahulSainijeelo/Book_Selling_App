@@ -8,6 +8,11 @@ import {
   StatusBar,
   Alert,
   ActivityIndicator,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Ionicons from '@react-native-vector-icons/ionicons';
@@ -15,6 +20,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { jwtDecode } from 'jwt-decode';
 import api from '../../../services/api.service';
 import { useAuthStore } from "../../store/useAuthStore";
+import loginStyles from './styles';
 
 interface JWTPayload {
   id: string;
@@ -27,6 +33,7 @@ interface JWTPayload {
 }
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<any>;
+type UserRole = 'USER' | 'SELLER';
 
 export default function LoginScreen() {
   const navigation = useNavigation<LoginScreenNavigationProp>();
@@ -34,18 +41,61 @@ export default function LoginScreen() {
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState<UserRole>('USER');
   const [showPassword, setShowPassword] = useState(false);
+  const [showRoleDropdown, setShowRoleDropdown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Error states
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+
+  const validateEmail = (emailValue: string) => {
+    if (!emailValue.trim()) {
+      setEmailError('Email is required');
+      return false;
+    }
+    if (!isValidEmail(emailValue)) {
+      setEmailError('Please enter a valid email address');
+      return false;
+    }
+    setEmailError('');
+    return true;
+  };
+
+  const validatePassword = (passwordValue: string) => {
+    if (!passwordValue.trim()) {
+      setPasswordError('Password is required');
+      return false;
+    }
+    setPasswordError('');
+    return true;
+  };
+
+  const handleEmailChange = (text: string) => {
+    setEmail(text);
+    if (emailError) {
+      validateEmail(text);
+    }
+  };
+
+  const handlePasswordChange = (text: string) => {
+    setPassword(text);
+    if (passwordError) {
+      validatePassword(text);
+    }
+  };
 
   const handleLogin = async () => {
-    // Validation
-    if (!email.trim() || !password.trim()) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
-    }
+    // Clear previous errors
+    setEmailError('');
+    setPasswordError('');
 
-    if (!isValidEmail(email)) {
-      Alert.alert('Error', 'Please enter a valid email address');
+    // Validation
+    const isEmailValid = validateEmail(email);
+    const isPasswordValid = validatePassword(password);
+
+    if (!isEmailValid || !isPasswordValid) {
       return;
     }
 
@@ -58,67 +108,58 @@ export default function LoginScreen() {
       const loginData = {
         email: email.trim().toLowerCase(),
         password: password.trim(),
+        role: role, // Include role in login request
       };
 
       console.log('Login data:', { ...loginData, password: '[HIDDEN]' });
 
       const response = await api.post('/api/auth/login', loginData);
-
       console.log('Login response:', response.data);
 
       if (response.status === 200 || response.status === 201) {
-        const { id, name, email: userEmail, token } = response.data;
+        const { id, name, email: userEmail, role: userRole, token } = response.data;
 
         if (!token) {
           throw new Error('Token not found in response');
         }
 
         try {
-          // Decode JWT token to extract all information
           const decodedToken: JWTPayload = jwtDecode(token);
           
           console.log('Decoded JWT token:', decodedToken);
-          
-          // Check if token is expired
           const currentTime = Date.now() / 1000;
           if (decodedToken.exp && decodedToken.exp < currentTime) {
             throw new Error('Token is expired');
           }
-          
-          // Extract user information from both response and decoded token
+
           const user = {
             id: decodedToken.id || id,
             name: name || decodedToken.name || '',
             email: userEmail || decodedToken.email || email.trim(),
-            role: (decodedToken.role || 'user'),
+            role: userRole || decodedToken.role || role,
             
-            // Additional fields from token if present
             ...(decodedToken.avatar && { avatar: decodedToken.avatar }),
             ...(decodedToken.permissions && { permissions: decodedToken.permissions }),
-            
-            // Token timing info
+   
             tokenIssuedAt: decodedToken.iat ? new Date(decodedToken.iat * 1000).toISOString() : null,
             tokenExpiresAt: decodedToken.exp ? new Date(decodedToken.exp * 1000).toISOString() : null,
           };
 
           console.log('Constructed user object:', user);
-
-          // Store user and token in zustand store
           loginUser(user, token);
 
-          // Show success message
+          const roleText = role === 'SELLER' ? 'seller' : 'reader';
           const expiryDate = decodedToken.exp 
             ? new Date(decodedToken.exp * 1000).toLocaleDateString() 
             : 'No expiry';
 
           Alert.alert(
             'Welcome Back! 👋', 
-            `Successfully logged in as ${user.name}\n\nToken expires: ${expiryDate}`,
+            `Successfully logged in as ${user.name} (${roleText})\n\nToken expires: ${expiryDate}`,
             [
               {
                 text: 'Continue',
                 onPress: () => {
-                  // Navigate to main app
                   navigation.reset({
                     index: 0,
                     routes: [{ name: 'MainApp' }],
@@ -130,18 +171,19 @@ export default function LoginScreen() {
 
         } catch (decodeError) {
           console.error('JWT decode error:', decodeError);
-          const fallbackUser:any = {
+          const fallbackUser: any = {
             id,
             name,
             email: userEmail,
-            role: 'user',
+            role: userRole || role,
           };
 
           loginUser(fallbackUser, token);
           
+          const roleText = role === 'SELLER' ? 'seller' : 'reader';
           Alert.alert(
             'Welcome Back! 👋', 
-            `Successfully logged in as ${name}`,
+            `Successfully logged in as ${name} (${roleText})`,
             [
               {
                 text: 'Continue',
@@ -155,7 +197,6 @@ export default function LoginScreen() {
             ]
           );
         }
-
       } else {
         throw new Error('Unexpected response status');
       }
@@ -163,41 +204,37 @@ export default function LoginScreen() {
     } catch (error: any) {
       console.error('Login error:', error);
       
-      let errorMessage = 'Login failed. Please try again.';
-      
       if (error.response) {
         const { status, data } = error.response;
         
         switch (status) {
           case 400:
-            errorMessage = data.message || data.error || 'Invalid credentials';
+            setEmailError(data.message || data.error || 'Invalid credentials');
             break;
           case 401:
-            errorMessage = 'Invalid email or password. Please check your credentials.';
+            setPasswordError('Invalid password. Please check your credentials.');
             break;
           case 403:
-            errorMessage = 'Account access denied. Please contact support.';
+            setEmailError('Account access denied. Please contact support.');
             break;
           case 404:
-            errorMessage = 'Account not found. Please check your email or sign up.';
+            setEmailError('Account not found. Please check your email or sign up.');
             break;
           case 429:
-            errorMessage = 'Too many login attempts. Please try again later.';
+            setEmailError('Too many login attempts. Please try again later.');
             break;
           case 500:
-            errorMessage = 'Server error. Please try again later.';
+            Alert.alert('Server Error', 'Server error. Please try again later.');
             break;
           default:
-            errorMessage = data.message || data.error || `Error ${status}: Login failed`;
+            setEmailError(data.message || data.error || 'Login failed');
         }
         
       } else if (error.request) {
-        errorMessage = 'Network error. Please check your connection and try again.';
+        Alert.alert('Network Error', 'Network error. Please check your connection and try again.');
       } else {
-        errorMessage = error.message || 'An unexpected error occurred';
+        Alert.alert('Error', error.message || 'An unexpected error occurred');
       }
-
-      Alert.alert('Login Failed', errorMessage);
       
     } finally {
       setIsLoading(false);
@@ -220,222 +257,189 @@ export default function LoginScreen() {
     );
   };
 
+  const handleRoleSelect = (selectedRole: UserRole) => {
+    setRole(selectedRole);
+    setShowRoleDropdown(false);
+  };
+
   return (
-    <>
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={loginStyles.keyboardAvoidingView}
+    >
       <StatusBar barStyle="light-content" backgroundColor="#8B5CF6" />
-      <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>          
-          <View style={styles.headerRight}>
-            <Text style={styles.headerText}>Don't have an account?</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-              <Text style={styles.headerLink}>Get started</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Brand */}
-        <View style={styles.brandContainer}>
-          <Text style={styles.brandName}>Bookie</Text>
-        </View>
-
-        {/* Form Container */}
-        <View style={styles.formContainer}>
-          <Text style={styles.welcomeTitle}>Welcome Back</Text>
-          <Text style={styles.welcomeSubtitle}>Enter your details below</Text>
-
-          {/* Email Input */}
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={[styles.input, !isValidEmail(email) && email.length > 0 && styles.inputError]}
-              placeholder="Enter your email"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-              placeholderTextColor="#999"
-              editable={!isLoading}
-            />
-            {email.length > 0 && isValidEmail(email) && (
-              <Ionicons name="checkmark-circle" size={20} color="#2ed573" style={styles.inputIcon} />
-            )}
+      
+      <TouchableWithoutFeedback onPress={() => {
+        Keyboard.dismiss();
+        setShowRoleDropdown(false);
+      }} accessible={false}>
+        <View style={loginStyles.loginContainer}>
+          {/* Header */}
+          <View style={loginStyles.loginHeader}>          
+            <View style={loginStyles.loginHeaderRight}>
+              <Text style={loginStyles.loginHeaderText}>Don't have an account?</Text>
+              <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+                <Text style={loginStyles.loginHeaderLink}>Get started</Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
-          {/* Password Input */}
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={[styles.input, styles.passwordInput]}
-              placeholder="Enter your password"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={!showPassword}
-              autoCapitalize="none"
-              placeholderTextColor="#999"
-              editable={!isLoading}
-            />
-            <TouchableOpacity
-              style={styles.eyeButton}
-              onPress={() => setShowPassword(!showPassword)}
-              disabled={isLoading}
-            >
-              <Ionicons
-                name={showPassword ? 'eye-outline' : 'eye-off-outline'}
-                size={20}
-                color="#999"
-              />
-            </TouchableOpacity>
-          </View>
-
-          {/* Sign In Button */}
-          <TouchableOpacity
-            style={[styles.signInButton, isLoading && styles.disabledButton]}
-            onPress={handleLogin}
-            disabled={isLoading}
+          <ScrollView 
+            contentContainerStyle={loginStyles.scrollContainer}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            bounces={false}
           >
-            {isLoading ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="small" color="#fff" />
-                <Text style={styles.signInButtonText}>Signing In...</Text>
+            <View style={loginStyles.loginFormContainer}>
+              <View style={loginStyles.loginBrandContainer}>
+                <Text style={loginStyles.loginBrandName}>Bookie</Text>
               </View>
-            ) : (
-              <Text style={styles.signInButtonText}>Sign In</Text>
-            )}
-          </TouchableOpacity>
 
-          {/* Forgot Password */}
-          <TouchableOpacity 
-            style={styles.forgotPasswordButton}
-            onPress={handleForgotPassword}
-            disabled={isLoading}
-          >
-            <Text style={styles.forgotPasswordText}>Forgot your password?</Text>
-          </TouchableOpacity>
+              <Text style={loginStyles.loginWelcomeTitle}>Welcome Back</Text>
+              <Text style={loginStyles.loginWelcomeSubtitle}>Enter your details below</Text>
+
+              {/* Role Selection */}
+              <View style={loginStyles.roleSelectionContainer}>
+                <Text style={loginStyles.roleLabel}>Login as</Text>
+                <TouchableOpacity
+                  style={loginStyles.roleSelector}
+                  onPress={() => setShowRoleDropdown(!showRoleDropdown)}
+                  disabled={isLoading}
+                >
+                  <View style={loginStyles.roleSelectorContent}>
+                    <Ionicons 
+                      name={role === 'USER' ? 'person-outline' : 'storefront-outline'} 
+                      size={20} 
+                      color="#8B5CF6" 
+                    />
+                    <Text style={loginStyles.roleSelectorText}>
+                      {role === 'USER' ? 'Reader' : 'Seller'}
+                    </Text>
+                  </View>
+                  <Ionicons 
+                    name={showRoleDropdown ? 'chevron-up' : 'chevron-down'} 
+                    size={20} 
+                    color="#666" 
+                  />
+                </TouchableOpacity>
+
+                {showRoleDropdown && (
+                  <View style={loginStyles.roleDropdown}>
+                    <TouchableOpacity
+                      style={[
+                        loginStyles.roleOption,
+                        role === 'USER' && loginStyles.roleOptionSelected
+                      ]}
+                      onPress={() => handleRoleSelect('USER')}
+                    >
+                      <Ionicons name="person-outline" size={20} color="#8B5CF6" />
+                      <Text style={loginStyles.roleOptionText}>Reader</Text>
+                      {role === 'USER' && (
+                        <Ionicons name="checkmark" size={16} color="#8B5CF6" />
+                      )}
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity
+                      style={[
+                        loginStyles.roleOption,
+                        role === 'SELLER' && loginStyles.roleOptionSelected
+                      ]}
+                      onPress={() => handleRoleSelect('SELLER')}
+                    >
+                      <Ionicons name="storefront-outline" size={20} color="#8B5CF6" />
+                      <Text style={loginStyles.roleOptionText}>Seller</Text>
+                      {role === 'SELLER' && (
+                        <Ionicons name="checkmark" size={16} color="#8B5CF6" />
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+
+              {/* Email Input */}
+              <View style={loginStyles.loginInputContainer}>
+                <TextInput
+                  style={[
+                    loginStyles.loginInput, 
+                    emailError && loginStyles.loginInputError
+                  ]}
+                  placeholder="Enter your email"
+                  value={email}
+                  onChangeText={handleEmailChange}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  placeholderTextColor="#999"
+                  editable={!isLoading}
+                />
+                {email.length > 0 && isValidEmail(email) && !emailError && (
+                  <Ionicons name="checkmark-circle" size={20} color="#2ed573" style={loginStyles.loginInputIcon} />
+                )}
+                {emailError && (
+                  <Text style={loginStyles.errorText}>{emailError}</Text>
+                )}
+              </View>
+
+              {/* Password Input */}
+              <View style={loginStyles.loginInputContainer}>
+                <View style={loginStyles.passwordContainer}>
+                  <TextInput
+                    style={[
+                      loginStyles.loginInput, 
+                      loginStyles.passwordInput,
+                      passwordError && loginStyles.loginInputError
+                    ]}
+                    placeholder="Enter your password"
+                    value={password}
+                    onChangeText={handlePasswordChange}
+                    secureTextEntry={!showPassword}
+                    autoCapitalize="none"
+                    placeholderTextColor="#999"
+                    editable={!isLoading}
+                  />
+                  <TouchableOpacity
+                    style={loginStyles.eyeButton}
+                    onPress={() => setShowPassword(!showPassword)}
+                    disabled={isLoading}
+                  >
+                    <Ionicons
+                      name={showPassword ? 'eye-outline' : 'eye-off-outline'}
+                      size={20}
+                      color="#999"
+                    />
+                  </TouchableOpacity>
+                </View>
+                {passwordError && (
+                  <Text style={loginStyles.errorText}>{passwordError}</Text>
+                )}
+              </View>
+
+              <TouchableOpacity
+                style={[loginStyles.signInButton, isLoading && loginStyles.disabledButton]}
+                onPress={handleLogin}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <View style={loginStyles.loadingContainer}>
+                    <ActivityIndicator size="small" color="#fff" />
+                    <Text style={loginStyles.signInButtonText}>Signing In...</Text>
+                  </View>
+                ) : (
+                  <Text style={loginStyles.signInButtonText}>Sign In</Text>
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={loginStyles.forgotPasswordButton}
+                onPress={handleForgotPassword}
+                disabled={isLoading}
+              >
+                <Text style={loginStyles.forgotPasswordText}>Forgot your password?</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
         </View>
-      </View>
-    </>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#8B5CF6',
-  },
-  header: {
-    flexDirection: 'row-reverse',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: 50,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerText: {
-    color: '#fff',
-    fontSize: 14,
-    marginRight: 8,
-  },
-  headerLink: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-    textDecorationLine: 'underline',
-  },
-  brandContainer: {
-    alignItems: 'center',
-    paddingVertical: 30,
-  },
-  brandName: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  formContainer: {
-    flex: 1,
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    paddingHorizontal: 30,
-    paddingTop: 40,
-  },
-  welcomeTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  welcomeSubtitle: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    marginBottom: 40,
-  },
-  inputContainer: {
-    position: 'relative',
-    marginBottom: 20,
-  },
-  input: {
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    fontSize: 16,
-    color: '#333',
-    borderWidth: 1,
-    borderColor: '#e9ecef',
-  },
-  inputError: {
-    borderColor: '#ff4757',
-  },
-  inputIcon: {
-    position: 'absolute',
-    right: 16,
-    top: 16,
-  },
-  passwordInput: {
-    paddingRight: 50,
-  },
-  eyeButton: {
-    position: 'absolute',
-    right: 16,
-    top: 16,
-    padding: 4,
-  },
-  signInButton: {
-    backgroundColor: '#8B5CF6',
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-    marginTop: 20,
-    shadowColor: '#8B5CF6',
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
-  },
-  disabledButton: {
-    opacity: 0.7,
-  },
-  signInButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  loadingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  forgotPasswordButton: {
-    alignItems: 'center',
-    marginTop: 24,
-  },
-  forgotPasswordText: {
-    color: '#666',
-    fontSize: 16,
-  },
-});

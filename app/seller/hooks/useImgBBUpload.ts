@@ -1,4 +1,3 @@
-// hooks/useImgBBUpload.js
 import { useState } from 'react';
 import { uploadImageToImgBB } from '../../services/imgbb.service';
 
@@ -11,7 +10,6 @@ export const useImgBBUpload = () => {
     setProgress(0);
 
     try {
-      // Simulate progress for UX
       const progressInterval = setInterval(() => {
         setProgress(prev => Math.min(prev + 10, 90));
       }, 100);
