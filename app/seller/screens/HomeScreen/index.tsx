@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import OrderItem from '../../components/OrderItem';
-
+import styles from "./styles.ts"
 type SellerStackParamList = {
   "Order Details": { orderId: number; title: string };
 };
@@ -56,27 +56,7 @@ export default function SellerHomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f9f9f9',
-    // paddingHorizontal:1
-  },
-  header: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: '#222',
-    marginBottom: 12,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#555',
-    marginBottom: 16,
-  },
-  list: {
-    flex: 1,
-  },
-});
+
 
 
 // OrderDetails: { orderId: number; title: string };

@@ -5,13 +5,13 @@ import SellerNavigator from './app/seller/navigation/AppNavigator';
 import { useAuthStore } from './app/shared/store/useAuthStore';
 import AppNavigator from './app/shared/navigation/AppNavigator';
 function RootNavigator() {
-  const { isLoggedIn, role } = useAuthStore();
+  const { isLoggedIn, user } = useAuthStore();
 
   if (!isLoggedIn) {
     return <AppNavigator/>;
   }
 
-  if (role === 'seller') {
+  if (user?.role === 'SELLER') {
     return <SellerNavigator />;
   } else {
     return <UserNavigator />;

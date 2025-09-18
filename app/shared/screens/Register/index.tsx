@@ -1,369 +1,336 @@
-import React, { useState } from 'react';
-import { View, Button, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { useAuthStore } from '../../store/useAuthStore';
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  KeyboardAvoidingView,
+  ScrollView,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StatusBar,
+  ActivityIndicator,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
+  Animated,
+  Dimensions,
+} from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import Ionicons from '@react-native-vector-icons/ionicons';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { isValidEmail, getPasswordStrength, validateForm } from '../../validations/auth.validations';
+import { useAuthStore } from "../../store/useAuthStore";
+import { handleSignupSubmission } from '../../lib/authFormHandler';
+import styles from './styles';
 
-export default function SignInScreen() {
-  const setRole = useAuthStore((state) => state.setRole);
-  const setIsLoggedIn = useAuthStore((state) => state.setIsLoggedIn);
-  const [selectedRole, setSelectedRole] = useState<'user' | 'seller' | null>(null);
+type RegisterScreenNavigationProp = NativeStackNavigationProp<any>;
+type UserRole = 'USER' | 'SELLER';
 
-  const handleLogin = () => {
-    if (selectedRole) {
-      setRole(selectedRole);
-      setIsLoggedIn(true);
+const { height: screenHeight } = Dimensions.get('window');
+
+export default function SignupScreen() {
+  const navigation = useNavigation<RegisterScreenNavigationProp>();
+  const { loginUser, setIsLoading: setStoreLoading } = useAuthStore();
+  const [email, setEmail] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [password, setPassword] = useState('');
+  const [role, setRole] = useState<UserRole>('USER');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const translateY = useRef(new Animated.Value(0)).current;
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      (event) => {
+        setKeyboardVisible(true);
+        setKeyboardHeight(event.endCoordinates.height);
+        Animated.spring(translateY, {
+          toValue: -50,
+          useNativeDriver: true,
+          tension: 100,
+          friction: 8,
+        }).start();
+      }
+    );
+
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        setKeyboardVisible(false);
+        setKeyboardHeight(0);
+
+        // Animate form back to original position
+        Animated.spring(translateY, {
+          toValue: 0,
+          useNativeDriver: true,
+          tension: 100,
+          friction: 8,
+        }).start();
+      }
+    );
+
+    return () => {
+      keyboardDidHideListener?.remove();
+      keyboardDidShowListener?.remove();
+    };
+  }, [translateY]);
+
+  const handleNextStep = () => {
+    if (currentStep === 1) {
+      if (!email.trim()) {
+        return;
+      }
+      if (!isValidEmail(email)) {
+        return;
+      }
+      setCurrentStep(2);
     }
   };
 
+  const handlePreviousStep = () => {
+    if (currentStep === 2) {
+      setCurrentStep(1);
+    }
+  };
+
+  const handleSignup = () => {
+    handleSignupSubmission({
+      email,
+      fullName,
+      password,
+      role,
+      setIsLoading,
+      setStoreLoading,
+      loginUser,
+      navigation,
+    });
+  };
+
+  const passwordStrength = getPasswordStrength(password);
+
   return (
-    <View style={styles.container}>
-      {/* UI same as before */}
-      <Text style={styles.title}>Book Store Sign In</Text>
-      <Text style={styles.subtitle}>Select your role</Text>
-      <View style={styles.roleButtons}>
-        <TouchableOpacity
-          style={[styles.roleButton, selectedRole === 'user' && styles.selected]}
-          onPress={() => setSelectedRole('user')}
-        >
-          <Text style={styles.roleText}>User</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.roleButton, selectedRole === 'seller' && styles.selected]}
-          onPress={() => setSelectedRole('seller')}
-        >
-          <Text style={styles.roleText}>Seller</Text>
-        </TouchableOpacity>
-      </View>
-      <Button disabled={!selectedRole} title="Login" onPress={handleLogin} />
-    </View>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.keyboardAvoidingView}
+    >
+      <StatusBar barStyle="light-content" backgroundColor="#8B5CF6" />
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View style={styles.container}>
+          <View style={styles.header}>
+            {currentStep === 2 && (
+              <TouchableOpacity onPress={handlePreviousStep} style={styles.backButton}>
+                <Ionicons name="arrow-back" size={24} color="#ffffff" />
+              </TouchableOpacity>
+            )}
+
+            <View style={styles.headerRight}>
+              <Text style={styles.headerText}>Already have an account?</Text>
+              <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+                <Text style={styles.headerLink}>Sign In</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          <Animated.View
+            style={[
+              styles.contentContainer,
+              {
+                transform: [{ translateY }],
+              }
+            ]}
+          >
+            <ScrollView
+              ref={scrollViewRef}
+              contentContainerStyle={[
+                styles.scrollViewContent,
+                keyboardVisible && { paddingBottom: keyboardHeight + 20 }
+              ]}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              bounces={false}
+            >
+
+              <View style={styles.formContainer}>
+                <View style={styles.brandContainer}>
+                  <Text style={styles.brandName}>Bookie</Text>
+                </View>
+                <View style={styles.formActual}>
+                  {currentStep === 1 ? (
+                  <>
+                    <Text style={styles.welcomeTitle}>Let's get started.</Text>
+
+                    <View style={styles.roleSection}>
+                      <Text style={styles.sectionLabel}>I want to join as</Text>
+                      <View style={styles.roleOptions}>
+                        <TouchableOpacity
+                          style={[
+                            styles.roleCard,
+                            role === 'USER' && styles.roleCardSelected
+                          ]}
+                          onPress={() => setRole('USER')}
+                          disabled={isLoading}
+                        >
+                          <Ionicons
+                            name="person-outline"
+                            size={24}
+                            color={role === 'USER' ? '#8B5CF6' : '#666'}
+                          />
+                          <Text style={[
+                            styles.roleText,
+                            role === 'USER' && styles.roleTextSelected
+                          ]}>
+                            User
+                          </Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          style={[
+                            styles.roleCard,
+                            role === 'SELLER' && styles.roleCardSelected
+                          ]}
+                          onPress={() => setRole('SELLER')}
+                          disabled={isLoading}
+                        >
+                          <Ionicons
+                            name="storefront-outline"
+                            size={24}
+                            color={role === 'SELLER' ? '#8B5CF6' : '#666'}
+                          />
+                          <Text style={[
+                            styles.roleText,
+                            role === 'SELLER' && styles.roleTextSelected
+                          ]}>
+                            Seller
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                    <View style={styles.inputContainer}>
+                      <Text style={styles.inputLabel}>Email Address</Text>
+                      <View style={[
+                        styles.inputWrapper,
+                        email.length > 0 && !isValidEmail(email) && styles.inputError
+                      ]}>
+                        <TextInput
+                          style={styles.input}
+                          placeholder="Enter your email"
+                          value={email}
+                          onChangeText={setEmail}
+                          keyboardType="email-address"
+                          autoCapitalize="none"
+                          autoCorrect={false}
+                          placeholderTextColor="#999"
+                          editable={!isLoading}
+                        />
+                        {email.length > 0 && isValidEmail(email) && (
+                          <Ionicons name="checkmark-circle" size={20} color="#2ed573" style={styles.inputIcon} />
+                        )}
+                      </View>
+                      {email.length > 0 && !isValidEmail(email) && (
+                        <Text style={styles.errorText}>Please enter a valid email address</Text>
+                      )}
+                    </View>
+                    <TouchableOpacity
+                      style={[
+                        styles.continueButton,
+                        (!email.trim() || !isValidEmail(email)) && styles.disabledButton
+                      ]}
+                      onPress={handleNextStep}
+                      disabled={!email.trim() || !isValidEmail(email) || isLoading}
+                    >
+                      <Text style={styles.continueButtonText}>Continue</Text>
+                      <Ionicons name="arrow-forward" size={20} color="#fff" />
+                    </TouchableOpacity>
+                  </>
+                ) : (
+                  <>
+                    <View style={styles.inputContainer}>
+                      <Text style={styles.inputLabel}>Full Name</Text>
+                      <View style={styles.inputWrapper}>
+                        <TextInput
+                          style={styles.input}
+                          placeholder="Enter your full name"
+                          value={fullName}
+                          onChangeText={setFullName}
+                          autoCapitalize="words"
+                          placeholderTextColor="#999"
+                          editable={!isLoading}
+                        />
+                      </View>
+                    </View>
+                    <View style={styles.inputContainer}>
+                      <Text style={styles.inputLabel}>Password</Text>
+                      <View style={styles.inputWrapper}>
+                        <TextInput
+                          style={[styles.input, styles.passwordInput]}
+                          placeholder="Create a password"
+                          value={password}
+                          onChangeText={setPassword}
+                          secureTextEntry={!showPassword}
+                          autoCapitalize="none"
+                          placeholderTextColor="#999"
+                          editable={!isLoading}
+                        />
+                        <TouchableOpacity
+                          style={styles.eyeButton}
+                          onPress={() => setShowPassword(!showPassword)}
+                          disabled={isLoading}
+                        >
+                          <Ionicons
+                            name={showPassword ? 'eye-outline' : 'eye-off-outline'}
+                            size={20}
+                            color="#999"
+                          />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                    {password.length > 0 && (
+                      <View style={styles.passwordStrengthContainer}>
+                        <View style={styles.passwordStrengthBars}>
+                          <View style={[
+                            styles.strengthBar,
+                            passwordStrength >= 1 && styles.weakStrength
+                          ]} />
+                          <View style={[
+                            styles.strengthBar,
+                            passwordStrength >= 2 && styles.mediumStrength
+                          ]} />
+                          <View style={[
+                            styles.strengthBar,
+                            passwordStrength >= 3 && styles.strongStrength
+                          ]} />
+                        </View>
+                        <Text style={styles.passwordStrengthText}>
+                          {passwordStrength < 2 ? 'Weak' : passwordStrength < 3 ? 'Medium' : 'Strong'}
+                        </Text>
+                      </View>
+                    )}
+                    <TouchableOpacity
+                      style={[styles.signUpButton, isLoading && styles.disabledButton]}
+                      onPress={handleSignup}
+                      disabled={isLoading || password.length < 6}
+                    >
+                      {isLoading ? (
+                        <View style={styles.loadingContainer}>
+                          <ActivityIndicator size="small" color="#fff" />
+                          <Text style={styles.signUpButtonText}>Creating Account...</Text>
+                        </View>
+                      ) : (
+                        <Text style={styles.signUpButtonText}>Create Account</Text>
+                      )}
+                    </TouchableOpacity>
+                  </>
+                )}
+                <View style={styles.bottomPadding} />
+                </View>
+              </View>
+            </ScrollView>
+          </Animated.View>
+        </View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
-  title: { fontSize: 28, fontWeight: 'bold', marginBottom: 24 },
-  subtitle: { fontSize: 18, marginBottom: 16 },
-  roleButtons: { flexDirection: 'row', marginBottom: 24 },
-  roleButton: {
-    borderWidth: 1,
-    borderColor: '#6200ea',
-    padding: 16,
-    borderRadius: 8,
-    marginHorizontal: 12,
-  },
-  selected: {
-    backgroundColor: '#6200ea',
-  },
-  roleText: {
-    color: '#6200ea',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-});
-
-
-
-
-// import React, { useState } from 'react';
-// import {
-//   View,
-//   Text,
-//   StyleSheet,
-//   TextInput,
-//   TouchableOpacity,
-//   StatusBar,
-//   Alert,
-// } from 'react-native';
-// import { useNavigation } from '@react-navigation/native';
-// import Ionicons from '@react-native-vector-icons/ionicons';
-// import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-// type RegisterScreenNavigationProp = NativeStackNavigationProp<any>;
-
-// export default function SignupScreen() {
-//   const navigation = useNavigation<RegisterScreenNavigationProp>();
-//   const [email, setEmail] = useState('');
-//   const [fullName, setFullName] = useState('');
-//   const [password, setPassword] = useState('');
-//   const [showPassword, setShowPassword] = useState(false);
-//   const [isLoading, setIsLoading] = useState(false);
-
-//   const handleSignup = async () => {
-//     if (!email.trim() || !fullName.trim() || !password.trim()) {
-//       Alert.alert('Error', 'Please fill in all fields');
-//       return;
-//     }
-
-//     if (!isValidEmail(email)) {
-//       Alert.alert('Error', 'Please enter a valid email address');
-//       return;
-//     }
-
-//     if (password.length < 6) {
-//       Alert.alert('Error', 'Password must be at least 6 characters long');
-//       return;
-//     }
-
-//     setIsLoading(true);
-    
-//     // Simulate signup API call
-//     setTimeout(() => {
-//       setIsLoading(false);
-//       // Navigate to main app or show success
-//       Alert.alert('Success', 'Account created successfully!');
-//     }, 2000);
-//   };
-
-//   const isValidEmail = (email: string) => {
-//     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-//     return emailRegex.test(email);
-//   };
-
-//   return (
-//     <>
-//       <StatusBar barStyle="light-content" backgroundColor="#8B5CF6" />
-//       <View style={styles.container}>
-//         {/* Header */}
-//         <View style={styles.header}>          
-//           <View style={styles.headerRight}>
-//             <Text style={styles.headerText}>Already have an account?</Text>
-//             <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-//               <Text style={styles.headerLink}>Sign In</Text>
-//             </TouchableOpacity>
-//           </View>
-//         </View>
-//         <View style={styles.brandContainer}>
-//           <Text style={styles.brandName}>Bookie</Text>
-//         </View>
-
-//         {/* Form Container */}
-//         <View style={styles.formContainer}>
-//           <Text style={styles.welcomeTitle}>Get started free.</Text>
-//           {/* Email Input */}
-//           <View style={styles.inputContainer}>
-//             <TextInput
-//               style={styles.input}
-//               placeholder="nicholas@engema.com"
-//               value={email}
-//               onChangeText={setEmail}
-//               keyboardType="email-address"
-//               autoCapitalize="none"
-//               autoCorrect={false}
-//               placeholderTextColor="#999"
-//             />
-//           </View>
-
-//           {/* Full Name Input */}
-//           <View style={styles.inputContainer}>
-//             <TextInput
-//               style={styles.input}
-//               placeholder="Nicholas Engema"
-//               value={fullName}
-//               onChangeText={setFullName}
-//               autoCapitalize="words"
-//               placeholderTextColor="#999"
-//             />
-//           </View>
-
-//           {/* Password Input */}
-//           <View style={styles.inputContainer}>
-//             <TextInput
-//               style={[styles.input, styles.passwordInput]}
-//               placeholder="Password"
-//               value={password}
-//               onChangeText={setPassword}
-//               secureTextEntry={!showPassword}
-//               autoCapitalize="none"
-//               placeholderTextColor="#999"
-//             />
-//             <TouchableOpacity
-//               style={styles.eyeButton}
-//               onPress={() => setShowPassword(!showPassword)}
-//             >
-//               <Ionicons
-//                 name={showPassword ? 'eye-outline' : 'eye-off-outline'}
-//                 size={20}
-//                 color="#999"
-//               />
-//             </TouchableOpacity>
-//           </View>
-
-//           {/* Password Strength Indicator */}
-//           <View style={styles.passwordStrengthContainer}>
-//             <View style={styles.passwordStrengthBars}>
-//               <View style={[styles.strengthBar, password.length >= 2 && styles.weakStrength]} />
-//               <View style={[styles.strengthBar, password.length >= 6 && styles.mediumStrength]} />
-//               <View style={[styles.strengthBar, password.length >= 8 && styles.strongStrength]} />
-//             </View>
-//             <Text style={styles.passwordStrengthText}>
-//               {password.length < 6 ? 'Weak' : password.length < 8 ? 'Medium' : 'Strong'}
-//             </Text>
-//           </View>
-
-//           {/* Sign Up Button */}
-//           <TouchableOpacity
-//             style={[styles.signUpButton, isLoading && styles.disabledButton]}
-//             onPress={handleSignup}
-//             disabled={isLoading}
-//           >
-//             <Text style={styles.signUpButtonText}>
-//               {isLoading ? 'Creating Account...' : 'Sign Up'}
-//             </Text>
-//           </TouchableOpacity>
-
-//           {/* Terms */}
-//           <Text style={styles.termsText}>
-//             By signing up, you agree to our{' '}
-//             <Text style={styles.termsLink}>Terms of Service</Text>
-//             {' '}and{' '}
-//             <Text style={styles.termsLink}>Privacy Policy</Text>
-//           </Text>
-//         </View>
-//       </View>
-//     </>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     backgroundColor: '#8B5CF6',
-//   },
-//   header: {
-//     flexDirection: 'row-reverse',
-//     justifyContent: 'space-between',
-//     alignItems: 'center',
-//     paddingTop: 50,
-//     paddingHorizontal: 20,
-//     paddingBottom: 20,
-//   },
-//   backButton: {
-//     padding: 8,
-//   },
-//   headerRight: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//   },
-//   headerText: {
-//     color: '#fff',
-//     fontSize: 14,
-//     marginRight: 8,
-//   },
-//   headerLink: {
-//     color: '#fff',
-//     fontSize: 14,
-//     fontWeight: '600',
-//     textDecorationLine: 'underline',
-//   },
-//   brandContainer: {
-//     alignItems: 'center',
-//     paddingVertical: 30,
-//   },
-//   brandName: {
-//     fontSize: 32,
-//     fontWeight: 'bold',
-//     color: '#fff',
-//   },
-//   formContainer: {
-//     flex: 1,
-//     backgroundColor: '#fff',
-//     borderTopLeftRadius: 30,
-//     borderTopRightRadius: 30,
-//     paddingHorizontal: 30,
-//     paddingTop: 40,
-//   },
-//   welcomeTitle: {
-//     fontSize: 24,
-//     fontWeight: 'bold',
-//     color: '#1a1a1a',
-//     textAlign: 'center',
-//     marginBottom: 8,
-//   },
-//   welcomeSubtitle: {
-//     fontSize: 16,
-//     color: '#666',
-//     textAlign: 'center',
-//     marginBottom: 40,
-//   },
-//   inputContainer: {
-//     position: 'relative',
-//     marginBottom: 20,
-//   },
-//   input: {
-//     backgroundColor: '#f8f9fa',
-//     borderRadius: 12,
-//     paddingHorizontal: 16,
-//     paddingVertical: 16,
-//     fontSize: 16,
-//     color: '#333',
-//     borderWidth: 1,
-//     borderColor: '#e9ecef',
-//   },
-//   passwordInput: {
-//     paddingRight: 50,
-//   },
-//   eyeButton: {
-//     position: 'absolute',
-//     right: 16,
-//     top: 16,
-//     padding: 4,
-//   },
-//   passwordStrengthContainer: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     marginBottom: 20,
-//   },
-//   passwordStrengthBars: {
-//     flexDirection: 'row',
-//     marginRight: 12,
-//   },
-//   strengthBar: {
-//     width: 40,
-//     height: 4,
-//     backgroundColor: '#e9ecef',
-//     marginRight: 4,
-//     borderRadius: 2,
-//   },
-//   weakStrength: {
-//     backgroundColor: '#ff4757',
-//   },
-//   mediumStrength: {
-//     backgroundColor: '#ffa502',
-//   },
-//   strongStrength: {
-//     backgroundColor: '#2ed573',
-//   },
-//   passwordStrengthText: {
-//     fontSize: 12,
-//     color: '#666',
-//   },
-//   signUpButton: {
-//     backgroundColor: '#8B5CF6',
-//     borderRadius: 12,
-//     paddingVertical: 16,
-//     alignItems: 'center',
-//     marginTop: 20,
-//     shadowColor: '#8B5CF6',
-//     shadowOpacity: 0.3,
-//     shadowRadius: 8,
-//     shadowOffset: { width: 0, height: 4 },
-//     elevation: 4,
-//   },
-//   disabledButton: {
-//     opacity: 0.7,
-//   },
-//   signUpButtonText: {
-//     color: '#fff',
-//     fontSize: 16,
-//     fontWeight: '600',
-//   },
-//   termsText: {
-//     fontSize: 14,
-//     color: '#666',
-//     textAlign: 'center',
-//     marginTop: 24,
-//     lineHeight: 20,
-//   },
-//   termsLink: {
-//     color: '#8B5CF6',
-//     fontWeight: '600',
-//   },
-// });

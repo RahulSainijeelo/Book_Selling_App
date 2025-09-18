@@ -1,10 +1,17 @@
 import React, { useState } from 'react';
-import { ScrollView, View,Text, StyleSheet, Switch, TouchableOpacity, Button, Image } from 'react-native';
-import {Ionicons} from '@react-native-vector-icons/ionicons';
+import { ScrollView, View, Text, StyleSheet, Switch, TouchableOpacity, Alert } from 'react-native';
+import { Ionicons } from '@react-native-vector-icons/ionicons';
 import Profile from '../../components/Profile';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { TabParamList } from '../../navigation/AppNavigator';
+import styles from './styles';
+import { useAuthStore } from '../../../shared/store/useAuthStore'; // Import the auth store
+type TabParamList = {
+    Login: any
+    Register:any
+    "Your Orders":any,
+    "Favorites":any
+}
 type SettingsNavigationProp = NativeStackNavigationProp<TabParamList>;
 
 export default function SettingsScreen() {
@@ -12,6 +19,8 @@ export default function SettingsScreen() {
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
   const [locationEnabled, setLocationEnabled] = useState(true);
   const navigation = useNavigation<SettingsNavigationProp>();
+  const { logout, user } = useAuthStore();
+
   const SettingsItem = ({ 
     icon, 
     title, 
@@ -19,7 +28,8 @@ export default function SettingsScreen() {
     hasSwitch = false, 
     switchValue, 
     onSwitchChange,
-    onPress 
+    onPress,
+    isDestructive = false
   }: {
     icon: any;
     title: string;
@@ -28,13 +38,30 @@ export default function SettingsScreen() {
     switchValue?: boolean;
     onSwitchChange?: (value: boolean) => void;
     onPress?: () => void;
+    isDestructive?: boolean;
   }) => (
     <TouchableOpacity style={styles.settingsItem} onPress={onPress}>
       <View style={styles.settingsItemLeft}>
-        <Ionicons name={icon} size={24} color="#6200ea" />
+        <Ionicons 
+          name={icon} 
+          size={24} 
+          color={isDestructive ? "#ff4757" : "#6200ea"} 
+        />
         <View style={styles.settingsItemText}>
-          <Text style={styles.settingsItemTitle}>{title}</Text>
-          {subtitle && <Text style={styles.settingsItemSubtitle}>{subtitle}</Text>}
+          <Text style={[
+            styles.settingsItemTitle,
+            isDestructive && styles.destructiveText
+          ]}>
+            {title}
+          </Text>
+          {subtitle && (
+            <Text style={[
+              styles.settingsItemSubtitle,
+              isDestructive && styles.destructiveSubtitle
+            ]}>
+              {subtitle}
+            </Text>
+          )}
         </View>
       </View>
       {hasSwitch ? (
@@ -50,21 +77,47 @@ export default function SettingsScreen() {
     </TouchableOpacity>
   );
 
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout',
+      `Are you sure you want to logout${user?.name ? `, ${user.name}` : ''}?`,
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel'
+        },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: () => {
+            console.log('User logging out...');
+            logout();
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'Login' }]
+            });
+          }
+        }
+      ]
+    );
+  };
+
   return (
     <ScrollView style={styles.container}>
-      <Profile/>
+      <Profile />
+      
       <Text style={styles.sectionHeader}>Account</Text>
-        <SettingsItem
-        icon="person-circle"
+      <SettingsItem
+        icon="cube"
         title="Your Orders"
         subtitle="Check Your Orders"
-        onPress={() => {navigation.navigate("Your Orders")}}
+        onPress={() => { navigation.navigate("Your Orders"); }}
       />
       <SettingsItem
-        icon="person-circle"
+        icon="heart"
         title="Favorites"
-        subtitle="Check Your Orders"
-        onPress={() => {navigation.navigate("Favorites")}}
+        subtitle="Check Your Favorites"
+        onPress={() => { navigation.navigate("Favorites"); }}
       />
       <SettingsItem
         icon="person-circle"
@@ -78,7 +131,8 @@ export default function SettingsScreen() {
         subtitle="Get help and contact us"
         onPress={() => console.log('Help pressed')}
       />
-       <Text style={styles.sectionHeader}>Preferences</Text>      
+
+      <Text style={styles.sectionHeader}>Preferences</Text>      
       <SettingsItem
         icon="moon"
         title="Dark Mode"
@@ -87,50 +141,25 @@ export default function SettingsScreen() {
         switchValue={darkModeEnabled}
         onSwitchChange={setDarkModeEnabled}
       />
+      <SettingsItem
+        icon="notifications"
+        title="Notifications"
+        subtitle="Manage notifications"
+        hasSwitch
+        switchValue={notificationsEnabled}
+        onSwitchChange={setNotificationsEnabled}
+      />
+      <Text style={styles.sectionHeader}>Account Actions</Text>
+      <SettingsItem
+        icon="log-out-outline"
+        title="Logout"
+        subtitle="Sign out of your account"
+        onPress={handleLogout}
+        isDestructive={true}
+      />
+
+      {/* Add some bottom spacing */}
+      <View style={{ height: 40 }} />
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  sectionHeader: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    marginTop: 20,
-    marginBottom: 12,
-    marginHorizontal: 16,
-  },
-  settingsItem: {
-    backgroundColor: '#fff',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    marginHorizontal: 16,
-    marginVertical: 2,
-    borderRadius: 8,
-  },
-  settingsItemLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  settingsItemText: {
-    marginLeft: 16,
-    flex: 1,
-  },
-  settingsItemTitle: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#333',
-  },
-  settingsItemSubtitle: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 2,
-  },
-});

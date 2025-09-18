@@ -8,7 +8,7 @@ import YourOrdersScreen from "../screens/SettingsScreen/YourOrders";
 import OrderDetailsScreen from "../screens/SettingsScreen/YourOrders/OrderDetails";
 import FavoritesScreen from "../screens/SettingsScreen/FavoritesScreen";
 export type TabParamList = {
-    TabNavigator: undefined
+    TabNavigator: any
     "Book Details": any
     "See All": any
     SearchScreen: undefined
