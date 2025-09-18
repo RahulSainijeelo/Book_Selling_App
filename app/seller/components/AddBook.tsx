@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,88 +11,146 @@ import {
   ScrollView,
   Alert,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@react-native-vector-icons/ionicons';
 import { launchImageLibrary, ImagePickerResponse } from 'react-native-image-picker';
 import { useImgBBUpload } from '../hooks/useImgBBUpload';
 import styles from "./AddBookStyles"
-interface Book {
+
+// Updated to match your Prisma schema
+interface BookFormData {
   title: string;
   author: string;
+  description?: string;
   price: number;
-  coverUrl: string;
+  categoryId: string;
+  imageUrl?: string;
   stock: number;
-  category: string;
+}
+
+interface Category {
+  id: string;
+  name: string;
 }
 
 interface AddBookDrawerProps {
   visible: boolean;
   onClose: () => void;
-  onAddBook: (book: Book) => void;
+  onAddBook: (book: BookFormData) => void;
+  isSubmitting: boolean;
 }
 
-const categories = ['Fiction', 'Non-Fiction', 'Programming', 'Science', 'History', 'Biography', 'Other'];
+const categories: Category[] = [
+  { id: 'd81e9dcd-5efb-4450-b4a9-493db8a4823a', name: 'Non-Fiction' },
+  { id: '679b8403-fb6f-402d-9228-6391be808d9e', name: 'Science' },
+  { id: '070516ba-af8a-41eb-9c95-b97061737276', name: 'History' },
+  { id: 'f6b3c0f5-c83b-4096-b91e-9e9496ae32e9', name: 'Biography' },
+  { id: 'e75367e9-4f3f-480a-904f-4275c5924396', name: 'Other' },
+  {id:'1b9f545f-b0f2-41e7-b689-8f4dc8589937',name:'Art'},
+  {id:'584d46b5-4a36-4132-84cf-1387a3df6d58',name:'Programming'},
+  {id:'547b9e02-54c7-46fa-8936-eb228b290437',name:'Science Fiction'}
+];
 
-export default function AddBookDrawer({ visible, onClose, onAddBook }: AddBookDrawerProps) {
+export default function AddBookDrawer({ visible, onClose, onAddBook, isSubmitting }: AddBookDrawerProps) {
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
+  const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
-  const [coverUrl, setCoverUrl] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
   const [stock, setStock] = useState('');
-  const [category, setCategory] = useState('Programming');
+  const [categoryId, setCategoryId] = useState('1'); // Default to Programming
   const [uploadError, setUploadError] = useState('');
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
-  // Use the ImgBB upload hook
   const { uploadImage, uploading, progress } = useImgBBUpload();
+
+  useEffect(() => {
+    if (!visible) {
+      clearForm();
+    }
+  }, [visible]);
 
   const clearForm = () => {
     setTitle('');
     setAuthor('');
+    setDescription('');
     setPrice('');
-    setCoverUrl('');
+    setImageUrl('');
     setStock('');
-    setCategory('Programming');
+    setCategoryId('1');
     setUploadError('');
+    setFormErrors({});
+  };
+
+  const validateForm = (): boolean => {
+    const errors: Record<string, string> = {};
+
+    if (!title.trim()) {
+      errors.title = 'Title is required';
+    }
+
+    if (!author.trim()) {
+      errors.author = 'Author is required';
+    }
+
+    if (!price.trim()) {
+      errors.price = 'Price is required';
+    } else {
+      const priceNum = parseFloat(price);
+      if (isNaN(priceNum) || priceNum <= 0) {
+        errors.price = 'Please enter a valid price greater than 0';
+      }
+    }
+
+    if (!stock.trim()) {
+      errors.stock = 'Stock quantity is required';
+    } else {
+      const stockNum = parseInt(stock);
+      if (isNaN(stockNum) || stockNum < 0) {
+        errors.stock = 'Please enter a valid stock quantity';
+      }
+    }
+
+    if (!categoryId) {
+      errors.category = 'Please select a category';
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleClose = () => {
-    clearForm();
-    onClose();
+    if (!isSubmitting) {
+      clearForm();
+      onClose();
+    }
   };
 
   const handleAddBook = () => {
-    if (!title.trim() || !author.trim() || !price.trim() || !stock.trim()) {
-      Alert.alert('Error', 'Please fill all required fields');
+    if (uploading || isSubmitting) return;
+
+    if (!validateForm()) {
+      Alert.alert('Validation Error', 'Please fix the errors and try again');
       return;
     }
 
-    const priceNum = parseFloat(price);
-    const stockNum = parseInt(stock);
-
-    if (isNaN(priceNum) || priceNum <= 0) {
-      Alert.alert('Error', 'Please enter a valid price');
-      return;
-    }
-
-    if (isNaN(stockNum) || stockNum < 0) {
-      Alert.alert('Error', 'Please enter a valid stock quantity');
-      return;
-    }
-
-    const newBook: Book = {
+    const bookData: BookFormData = {
       title: title.trim(),
       author: author.trim(),
-      price: priceNum,
-      coverUrl: coverUrl.trim() || 'https://via.placeholder.com/300x400?text=No+Image',
-      stock: stockNum,
-      category,
+      description: description.trim() || undefined,
+      price: parseFloat(price),
+      categoryId,
+      imageUrl: imageUrl.trim() || undefined,
+      stock: parseInt(stock),
     };
 
-    onAddBook(newBook);
-    clearForm();
+    onAddBook(bookData);
   };
 
   const selectAndUploadImage = () => {
+    if (uploading || isSubmitting) return;
+
     const options = {
       mediaType: 'photo' as const,
       quality: 0.8,
@@ -106,18 +164,18 @@ export default function AddBookDrawer({ visible, onClose, onAddBook }: AddBookDr
       }
 
       if (response.assets && response.assets[0]) {
-        const imageUri = response.assets[0].uri;
-        if (imageUri) {
+        const uri = response.assets[0].uri;
+        if (uri) {
           setUploadError('');
           uploadImage(
-            imageUri,
+            uri,
             // onSuccess callback
-            (data:any) => {
-              setCoverUrl(data.url);
+            (data: any) => {
+              setImageUrl(data.url);
               Alert.alert('Success', 'Image uploaded successfully!');
             },
             // onError callback
-            (error:any) => {
+            (error: any) => {
               setUploadError(error);
               Alert.alert('Upload Error', error);
             }
@@ -128,9 +186,12 @@ export default function AddBookDrawer({ visible, onClose, onAddBook }: AddBookDr
   };
 
   const removeImage = () => {
-    setCoverUrl('');
+    if (uploading || isSubmitting) return;
+    setImageUrl('');
     setUploadError('');
   };
+
+  const selectedCategory = categories.find(cat => cat.id === categoryId);
 
   return (
     <Modal
@@ -146,7 +207,11 @@ export default function AddBookDrawer({ visible, onClose, onAddBook }: AddBookDr
             
             <View style={styles.header}>
               <Text style={styles.title}>Add New Book</Text>
-              <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+              <TouchableOpacity 
+                onPress={handleClose} 
+                style={[styles.closeButton, (uploading || isSubmitting) && { opacity: 0.5 }]}
+                disabled={uploading || isSubmitting}
+              >
                 <Ionicons name="close" size={24} color="#666" />
               </TouchableOpacity>
             </View>
@@ -156,94 +221,140 @@ export default function AddBookDrawer({ visible, onClose, onAddBook }: AddBookDr
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>Book Title *</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, formErrors.title && styles.inputError]}
                   placeholder="Enter book title"
                   value={title}
-                  onChangeText={setTitle}
+                  onChangeText={(text) => {
+                    setTitle(text);
+                    if (formErrors.title) {
+                      setFormErrors(prev => ({ ...prev, title: '' }));
+                    }
+                  }}
                   placeholderTextColor="#999"
+                  editable={!uploading && !isSubmitting}
                 />
+                {formErrors.title && <Text style={styles.errorText}>{formErrors.title}</Text>}
               </View>
 
-              {/* Author Input */}
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>Author *</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, formErrors.author && styles.inputError]}
                   placeholder="Enter author name"
                   value={author}
-                  onChangeText={setAuthor}
+                  onChangeText={(text) => {
+                    setAuthor(text);
+                    if (formErrors.author) {
+                      setFormErrors(prev => ({ ...prev, author: '' }));
+                    }
+                  }}
                   placeholderTextColor="#999"
+                  editable={!uploading && !isSubmitting}
+                />
+                {formErrors.author && <Text style={styles.errorText}>{formErrors.author}</Text>}
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Description</Text>
+                <TextInput
+                  style={[styles.input, styles.textArea]}
+                  placeholder="Enter book description (optional)"
+                  value={description}
+                  onChangeText={setDescription}
+                  placeholderTextColor="#999"
+                  multiline
+                  numberOfLines={3}
+                  editable={!uploading && !isSubmitting}
                 />
               </View>
 
-              {/* Price and Stock Row */}
               <View style={styles.row}>
                 <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
-                  <Text style={styles.label}>Price *</Text>
+                  <Text style={styles.label}>Price * ($)</Text>
                   <TextInput
-                    style={styles.input}
+                    style={[styles.input, formErrors.price && styles.inputError]}
                     placeholder="0.00"
                     value={price}
-                    onChangeText={setPrice}
+                    onChangeText={(text) => {
+                      setPrice(text);
+                      if (formErrors.price) {
+                        setFormErrors(prev => ({ ...prev, price: '' }));
+                      }
+                    }}
                     keyboardType="decimal-pad"
                     placeholderTextColor="#999"
+                    editable={!uploading && !isSubmitting}
                   />
+                  {formErrors.price && <Text style={styles.errorText}>{formErrors.price}</Text>}
                 </View>
                 <View style={[styles.inputGroup, { flex: 1, marginLeft: 8 }]}>
                   <Text style={styles.label}>Stock *</Text>
                   <TextInput
-                    style={styles.input}
+                    style={[styles.input, formErrors.stock && styles.inputError]}
                     placeholder="0"
                     value={stock}
-                    onChangeText={setStock}
+                    onChangeText={(text) => {
+                      setStock(text);
+                      if (formErrors.stock) {
+                        setFormErrors(prev => ({ ...prev, stock: '' }));
+                      }
+                    }}
                     keyboardType="number-pad"
                     placeholderTextColor="#999"
+                    editable={!uploading && !isSubmitting}
                   />
+                  {formErrors.stock && <Text style={styles.errorText}>{formErrors.stock}</Text>}
                 </View>
               </View>
 
-              {/* Category Selection */}
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>Category</Text>
+                <Text style={styles.label}>Category *</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   <View style={styles.categoryRow}>
                     {categories.map((cat) => (
                       <TouchableOpacity
-                        key={cat}
+                        key={cat.id}
                         style={[
                           styles.categoryChip,
-                          category === cat && styles.categoryChipActive
+                          categoryId === cat.id && styles.categoryChipActive
                         ]}
-                        onPress={() => setCategory(cat)}
+                        onPress={() => {
+                          if (!uploading && !isSubmitting) {
+                            setCategoryId(cat.id);
+                            if (formErrors.category) {
+                              setFormErrors(prev => ({ ...prev, category: '' }));
+                            }
+                          }
+                        }}
+                        disabled={uploading || isSubmitting}
                       >
                         <Text style={[
                           styles.categoryText,
-                          category === cat && styles.categoryTextActive
-                        ]}>{cat}</Text>
+                          categoryId === cat.id && styles.categoryTextActive
+                        ]}>{cat.name}</Text>
                       </TouchableOpacity>
                     ))}
                   </View>
                 </ScrollView>
+                {formErrors.category && <Text style={styles.errorText}>{formErrors.category}</Text>}
               </View>
 
-              {/* Image Upload Section */}
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>Cover Image</Text>
                 
-                {/* Image Preview */}
-                {coverUrl ? (
+                {imageUrl ? (
                   <View style={styles.imagePreviewContainer}>
-                    <Image source={{ uri: coverUrl }} style={styles.imagePreview} />
+                    <Image source={{ uri: imageUrl }} style={styles.imagePreview} />
                     <TouchableOpacity 
                       style={styles.removeImageButton} 
                       onPress={removeImage}
+                      disabled={uploading || isSubmitting}
                     >
                       <Ionicons name="close-circle" size={24} color="#ff4757" />
                     </TouchableOpacity>
                   </View>
                 ) : null}
 
-                {/* Upload Progress Bar */}
                 {uploading && (
                   <View style={styles.progressContainer}>
                     <View style={styles.progressBar}>
@@ -255,11 +366,10 @@ export default function AddBookDrawer({ visible, onClose, onAddBook }: AddBookDr
                   </View>
                 )}
 
-                {/* Upload Button */}
                 <TouchableOpacity 
-                  style={[styles.uploadButton, uploading && styles.uploadButtonDisabled]}
+                  style={[styles.uploadButton, (uploading || isSubmitting) && styles.uploadButtonDisabled]}
                   onPress={selectAndUploadImage}
-                  disabled={uploading}
+                  disabled={uploading || isSubmitting}
                 >
                   <Ionicons name="cloud-upload-outline" size={20} color="#fff" />
                   <Text style={styles.uploadButtonText}>
@@ -267,7 +377,6 @@ export default function AddBookDrawer({ visible, onClose, onAddBook }: AddBookDr
                   </Text>
                 </TouchableOpacity>
 
-                {/* Manual URL Input */}
                 <View style={styles.orDivider}>
                   <View style={styles.dividerLine} />
                   <Text style={styles.orText}>OR</Text>
@@ -277,10 +386,11 @@ export default function AddBookDrawer({ visible, onClose, onAddBook }: AddBookDr
                 <TextInput
                   style={styles.input}
                   placeholder="Enter image URL manually"
-                  value={coverUrl}
-                  onChangeText={setCoverUrl}
+                  value={imageUrl}
+                  onChangeText={setImageUrl}
                   placeholderTextColor="#999"
                   autoCapitalize="none"
+                  editable={!uploading && !isSubmitting}
                 />
 
                 {/* Upload Error */}
@@ -292,15 +402,23 @@ export default function AddBookDrawer({ visible, onClose, onAddBook }: AddBookDr
 
             {/* Action Buttons */}
             <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.cancelButton} onPress={handleClose}>
+              <TouchableOpacity 
+                style={[styles.cancelButton, (uploading || isSubmitting) && { opacity: 0.5 }]} 
+                onPress={handleClose}
+                disabled={uploading || isSubmitting}
+              >
                 <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity 
-                style={[styles.addButton, uploading && styles.addButtonDisabled]} 
+                style={[styles.addButton, (uploading || isSubmitting) && styles.addButtonDisabled]} 
                 onPress={handleAddBook}
-                disabled={uploading}
+                disabled={uploading || isSubmitting}
               >
-                <Text style={styles.addButtonText}>Add Book</Text>
+                {isSubmitting ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.addButtonText}>Add Book</Text>
+                )}
               </TouchableOpacity>
             </View>
           </View>

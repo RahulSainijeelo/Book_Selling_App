@@ -139,9 +139,6 @@ export default StyleSheet.create({
     borderRadius: 12,
     marginBottom: 16,
   },
-  uploadButtonDisabled: {
-    opacity: 0.6,
-  },
   uploadButtonText: {
     color: '#fff',
     fontSize: 16,
@@ -162,13 +159,6 @@ export default StyleSheet.create({
     marginHorizontal: 16,
     fontSize: 14,
     color: '#999',
-    fontWeight: '500',
-  },
-  errorText: {
-    marginTop: 8,
-    fontSize: 14,
-    color: '#ff4757',
-    textAlign: 'center',
     fontWeight: '500',
   },
   buttonContainer: {
@@ -198,12 +188,29 @@ export default StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
   },
-  addButtonDisabled: {
-    opacity: 0.6,
-  },
   addButtonText: {
     fontSize: 16,
     fontWeight: '700',
     color: '#fff',
+  },
+  textArea: {
+    height: 80,
+    textAlignVertical: 'top',
+  },
+  inputError: {
+    borderColor: '#ff4757',
+    borderWidth: 1,
+  },
+  errorText: {
+    color: '#ff4757',
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 4,
+  },
+  addButtonDisabled: {
+    opacity: 0.7,
+  },
+  uploadButtonDisabled: {
+    opacity: 0.7,
   },
 });

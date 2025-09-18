@@ -42,8 +42,6 @@ export default function OrderDetailsScreen() {
           showsHorizontalScrollIndicator={false}
           style={{ marginBottom: 12 }}
         />
-
-        {/* Product and Status */}
         <View style={styles.rowBetween}>
           <Text style={styles.sectionLabel}>PRODUCT</Text>
           <View
