@@ -1,60 +1,150 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
-  itemContainer: {
-    flexDirection: 'row',
+  card: {
     backgroundColor: '#fff',
+    borderRadius: 20,
+    marginHorizontal: 12,
+    marginBottom: 18,
     padding: 16,
-    margin: 8,
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 5,
-    elevation: 4,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOpacity: 0.07,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 3 },
   },
-  bookCover: {
-    width: 70,
-    height: 100,
-    borderRadius: 6,
-    marginRight: 16,
-    resizeMode: 'cover',
-  },
-  detailsContainer: {
-    flex: 1,
+  headerRow: {
+    flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 2,
   },
-  title: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#222',
-  },
-  price: {
-    fontSize: 16,
-    color: '#1E90FF',
-    fontWeight: '600',
-    marginVertical: 4,
-  },
-  buyer: {
-    fontSize: 14,
-    color: '#555',
-  },
-  statusBadge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 15,
-    marginTop: 6,
+  orderIdText: {
+    color: "#F78104",
+    fontSize: 15.5,
+    fontWeight: "bold",
+    letterSpacing: 0.2,
   },
   statusText: {
-    color: 'white',
-    fontWeight: '700',
-    fontSize: 12,
+    fontWeight: "700",
+    fontSize: 14,
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    backgroundColor: "#f6f9f6",
   },
-  orderId: {
-    fontSize: 12,
-    color: '#888',
-    fontStyle: 'italic',
-    marginTop: 4,
+  subheaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginVertical: 2,
+    marginBottom: 7,
+  },
+  subheaderDate: {
+    color: "#BABEC6",
+    fontSize: 13,
+    fontWeight: "500",
+  },
+  tableNameText: {
+    color: "#6B47D6",
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  booksList: {
+    maxHeight: 145, // 2 book items  (adjust to bookImage + margins * 2)
+    marginBottom: 10,
+    marginTop: 2,
+  },
+  bookRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F7F5FA",
+    borderRadius: 12,
+    marginBottom: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+  },
+  bookImage: {
+    width: 46,
+    height: 61,
+    borderRadius: 9,
+    backgroundColor: "#edeaff",
+    marginRight: 12,
+  },
+  bookDetails: {
+    flex: 1,
+    minWidth: 72,
+  },
+  bookTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#222d3a",
+    marginBottom: 3,
+  },
+  detailsMeta: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+  },
+  bookPrice: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#F78104",
+  },
+  bookQty: {
+    fontSize: 13,
+    color: "#6C7687",
+    fontWeight: "500",
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#eeeeee",
+    marginVertical: 7,
+    marginHorizontal: -16,
+  },
+  rowBetween: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginVertical: 1,
+  },
+  infoLabel: {
+    fontSize: 13,
+    color: "#949494",
+    fontWeight: "500",
+  },
+  infoValue: {
+    fontSize: 15,
+    color: "#222",
+    fontWeight: "bold",
+  },
+  discountValue: {
+    fontSize: 14,
+    color: "#1EB676",
+    fontWeight: "bold",
+  },
+  paymentContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  paymentMethod: {
+    fontSize: 14,
+    color: "#1976D2",
+    fontWeight: "bold",
+    marginRight: 7,
+  },
+  paidBadge: {
+    backgroundColor: "#E0F7EC",
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    marginLeft: 3,
+  },
+  paidText: {
+    fontSize: 13,
+    color: "#20B86B",
+    fontWeight: "700",
   },
 });
