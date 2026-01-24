@@ -9,11 +9,15 @@ import {
   Dimensions,
   Share,
   Alert,
+  Platform,
 } from 'react-native';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import styles from "./styles"
+import { useThemeStore } from '../../../../shared/store/useThemeStore';
+import { THEME } from '../../../../shared/theme/constants';
+
 const { width } = Dimensions.get('window');
 
 type BookDetailsRouteProp = RouteProp<{ BookDetails: { bookId: number } }, 'BookDetails'>;
@@ -119,6 +123,8 @@ export default function BookDetailsScreen() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [selectedTab, setSelectedTab] = useState('description');
+  const { isDarkMode } = useThemeStore();
+  const currentTheme = isDarkMode ? THEME.dark : THEME.light;
 
   const book = mockBookDetails;
 
@@ -143,243 +149,211 @@ export default function BookDetailsScreen() {
 
   const renderStars = (rating: number, size: number = 16) => {
     const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 !== 0;
-
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(<Ionicons key={i} name="star" size={size} color="#FFD700" />);
+    for (let i = 0; i < 5; i++) {
+      stars.push(
+        <Ionicons
+          key={i}
+          name={i < Math.floor(rating) ? "star" : i < rating ? "star-half" : "star-outline"}
+          size={size}
+          color="#FFD700"
+        />
+      );
     }
-
-    if (hasHalfStar) {
-      stars.push(<Ionicons key="half" name="star-half" size={size} color="#FFD700" />);
-    }
-
-    const emptyStars = 5 - Math.ceil(rating);
-    for (let i = 0; i < emptyStars; i++) {
-      stars.push(<Ionicons key={`empty-${i}`} name="star-outline" size={size} color="#DDD" />);
-    }
-
     return stars;
   };
 
   const ReviewItem = ({ review }: { review: any }) => (
-    <View style={styles.reviewItem}>
+    <View style={[styles.reviewItem, { borderColor: currentTheme.border }]}>
       <View style={styles.reviewHeader}>
         <View style={styles.reviewerInfo}>
-          <Text style={styles.reviewerName}>{review.name}</Text>
+          <Text style={[styles.reviewerName, { color: currentTheme.text }]}>{review.name}</Text>
           <View style={styles.reviewRating}>
             {renderStars(review.rating, 14)}
           </View>
         </View>
-        <Text style={styles.reviewDate}>{review.date}</Text>
+        <Text style={[styles.reviewDate, { color: currentTheme.textSecondary }]}>{review.date}</Text>
       </View>
-      <Text style={styles.reviewComment}>{review.comment}</Text>
+      <Text style={[styles.reviewComment, { color: currentTheme.textSecondary }]}>{review.comment}</Text>
       <View style={styles.reviewFooter}>
-        <TouchableOpacity style={styles.helpfulButton}>
-          <Ionicons name="thumbs-up-outline" size={14} color="#666" />
-          <Text style={styles.helpfulText}>Helpful ({review.helpful})</Text>
+        <TouchableOpacity style={[styles.helpfulButton, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }]}>
+          <Ionicons name="thumbs-up-outline" size={14} color={currentTheme.textSecondary} />
+          <Text style={[styles.helpfulText, { color: currentTheme.textSecondary }]}>Helpful ({review.helpful})</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 
   const RelatedBookCard = ({ book }: { book: any }) => (
-    <TouchableOpacity style={styles.relatedBookCard}>
+    <TouchableOpacity
+      style={[styles.relatedBookCard, { backgroundColor: currentTheme.card, borderColor: currentTheme.border }]}
+      activeOpacity={0.8}
+    >
       <Image source={{ uri: book.coverUrl }} style={styles.relatedBookImage} />
-      <Text style={styles.relatedBookTitle} numberOfLines={2}>{book.title}</Text>
-      <Text style={styles.relatedBookAuthor} numberOfLines={1}>{book.author}</Text>
+      <Text style={[styles.relatedBookTitle, { color: currentTheme.text }]} numberOfLines={2}>{book.title}</Text>
+      <Text style={[styles.relatedBookAuthor, { color: currentTheme.textSecondary }]} numberOfLines={1}>{book.author}</Text>
       <View style={styles.relatedBookFooter}>
         <View style={styles.relatedBookRating}>
           {renderStars(book.rating, 12)}
         </View>
-        <Text style={styles.relatedBookPrice}>${book.price}</Text>
+        <Text style={[styles.relatedBookPrice, { color: currentTheme.primary }]}>${book.price}</Text>
       </View>
     </TouchableOpacity>
   );
 
   return (
-    <>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      <View style={styles.container}>
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          {/* Book Image and Basic Info */}
-          <View style={styles.bookSection}>
-            <View style={styles.heroSection}>
-          <View style={styles.bookImageContainer}>
-            <Image source={{ uri: book.coverUrl }} style={styles.bookImage} />
-            <View style={styles.discountBadge}>
-              <Text style={styles.discountText}>{book.discount}% OFF</Text>
+    <View style={[styles.container, { backgroundColor: isDarkMode ? currentTheme.background[1] : currentTheme.background[0] }]}>
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} translucent backgroundColor="transparent" />
+
+      {/* Background shapes */}
+      <View style={[styles.bgShape1, { backgroundColor: currentTheme.shape2 }]} />
+      <View style={[styles.bgShape2, { backgroundColor: currentTheme.shape1 }]} />
+
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Book Image and Basic Info */}
+        <View style={styles.bookSection}>
+          <View style={styles.heroSection}>
+            <View style={styles.bookImageContainer}>
+              <Image source={{ uri: book.coverUrl }} style={styles.bookImage} />
+              <View style={[styles.discountBadge, { backgroundColor: '#FF6B6B' }]}>
+                <Text style={styles.discountText}>{book.discount}% OFF</Text>
+              </View>
+            </View>
+
+            {/* Action Icons */}
+            <View style={styles.floatingActions}>
+              <TouchableOpacity onPress={handleShare} style={[styles.actionButton, { backgroundColor: currentTheme.card }]}>
+                <Ionicons name="share-outline" size={20} color={currentTheme.text} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setIsFavorite(!isFavorite)}
+                style={[styles.actionButton, { backgroundColor: currentTheme.card }]}
+              >
+                <Ionicons
+                  name={isFavorite ? "heart" : "heart-outline"}
+                  size={20}
+                  color={isFavorite ? "#FF6B6B" : currentTheme.text}
+                />
+              </TouchableOpacity>
             </View>
           </View>
 
-          {/* Action Icons - Floating over image */}
-          <View style={styles.floatingActions}>
-            <TouchableOpacity onPress={handleShare} style={styles.actionButton}>
-              <Ionicons name="share-outline" size={20} color="#333" />
-            </TouchableOpacity>
-            <TouchableOpacity 
-              onPress={() => setIsFavorite(!isFavorite)} 
-              style={styles.actionButton}
-            >
-              <Ionicons 
-                name={isFavorite ? "heart" : "heart-outline"} 
-                size={20} 
-                color={isFavorite ? "#FF6B6B" : "#333"} 
-              />
-            </TouchableOpacity>
+          <View style={[styles.bookInfo, { backgroundColor: currentTheme.card, borderColor: currentTheme.border }]}>
+            <Text style={[styles.bookTitle, { color: currentTheme.text }]}>{book.title}</Text>
+            <Text style={[styles.bookAuthor, { color: currentTheme.textSecondary }]}>by {book.author}</Text>
+            <Text style={[styles.publisher, { color: currentTheme.textSecondary }]}>{book.publisher}</Text>
+
+            <View style={styles.ratingSection}>
+              <View style={styles.ratingContainer}>
+                {renderStars(book.rating, 18)}
+                <Text style={[styles.ratingText, { color: currentTheme.text }]}>{book.rating}</Text>
+              </View>
+              <Text style={[styles.reviewCount, { color: currentTheme.textSecondary }]}>({book.reviewCount.toLocaleString()} reviews)</Text>
+            </View>
+
+            <View style={styles.priceSection}>
+              <Text style={[styles.currentPrice, { color: currentTheme.primary }]}>${book.price}</Text>
+              <Text style={styles.originalPrice}>${book.originalPrice}</Text>
+              <View style={[styles.savingsContainer, { backgroundColor: 'rgba(16, 185, 129, 0.1)' }]}>
+                <Text style={[styles.savingsText, { color: '#10B981' }]}>You Save: ${(book.originalPrice - book.price).toFixed(2)}</Text>
+              </View>
+            </View>
+
+            {/* Authenticity Details */}
+            <View style={[styles.authenticitySection, { borderColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }]}>
+              <Text style={[styles.authenticityTitle, { color: currentTheme.text }]}>Authenticity & Details</Text>
+
+              <View style={styles.isbnRow}>
+                <Text style={[styles.isbnLabel, { color: currentTheme.textSecondary }]}>ISBN:</Text>
+                <Text style={[styles.isbnValue, { color: currentTheme.text }]}>{book.isbn}</Text>
+              </View>
+
+              <View style={styles.verificationRow}>
+                <Ionicons name="checkmark-circle" size={16} color="#10B981" />
+                <Text style={[styles.verificationText, { color: currentTheme.textSecondary }]}>Verified Authentic Book</Text>
+              </View>
+              <View style={styles.verificationRow}>
+                <Ionicons name="shield-checkmark" size={16} color="#10B981" />
+                <Text style={[styles.verificationText, { color: currentTheme.textSecondary }]}>Publisher Certified</Text>
+              </View>
+            </View>
+
+            <View style={styles.availabilitySection}>
+              <View style={styles.availabilityRow}>
+                <Ionicons name="checkmark-circle" size={16} color="#10B981" />
+                <Text style={[styles.availabilityText, { color: '#10B981' }]}>{book.availability}</Text>
+              </View>
+              <Text style={[styles.deliveryInfo, { color: currentTheme.textSecondary }]}>{book.deliveryInfo}</Text>
+            </View>
           </View>
         </View>
 
-            <View style={styles.bookInfo}>
-              {/* Action Icons Row */}
-              <Text style={styles.bookTitle}>{book.title}</Text>
-              <Text style={styles.bookAuthor}>by {book.author}</Text>
-              <Text style={styles.publisher}>{book.publisher}</Text>
-
-              <View style={styles.ratingSection}>
-                <View style={styles.ratingContainer}>
-                  {renderStars(book.rating, 18)}
-                  <Text style={styles.ratingText}>{book.rating}</Text>
-                </View>
-                <Text style={styles.reviewCount}>({book.reviewCount.toLocaleString()} reviews)</Text>
-              </View>
-
-              <View style={styles.priceSection}>
-                <Text style={styles.currentPrice}>${book.price}</Text>
-                <Text style={styles.originalPrice}>${book.originalPrice}</Text>
-                <View style={styles.savingsContainer}>
-                  <Text style={styles.savingsText}>You Save: ${(book.originalPrice - book.price).toFixed(2)}</Text>
-                </View>
-              </View>
-
-              {/* Authenticity & ISBN Details */}
-              <View style={styles.authenticitySection}>
-                <Text style={styles.authenticityTitle}>Authenticity & Details</Text>
-
-                <View style={styles.isbnRow}>
-                  <Text style={styles.isbnLabel}>ISBN:</Text>
-                  <Text style={styles.isbnValue}>{book.isbn}</Text>
-                </View>
-
-                <View style={styles.verificationRow}>
-                  <Ionicons name="checkmark-circle" size={16} color="#28a745" />
-                  <Text style={styles.verificationText}>Verified Authentic Book</Text>
-                </View>
-
-                <View style={styles.verificationRow}>
-                  <Ionicons name="shield-checkmark" size={16} color="#28a745" />
-                  <Text style={styles.verificationText}>Publisher Certified</Text>
-                </View>
-
-                <View style={styles.verificationRow}>
-                  <Ionicons name="library" size={16} color="#28a745" />
-                  <Text style={styles.verificationText}>Original Edition</Text>
-                </View>
-
-                <View style={styles.verificationRow}>
-                  <Ionicons name="globe" size={16} color="#007bff" />
-                  <Text style={styles.verificationText}>Internationally Distributed</Text>
-                </View>
-              </View>
-
-              <View style={styles.availabilitySection}>
-                <View style={styles.availabilityRow}>
-                  <Ionicons name="checkmark-circle" size={16} color="#28A745" />
-                  <Text style={styles.availabilityText}>{book.availability}</Text>
-                </View>
-                <Text style={styles.deliveryInfo}>{book.deliveryInfo}</Text>
-              </View>
-            </View>
-          </View>
-
-
-          {/* Tabs */}
-          <View style={styles.tabsContainer}>
+        {/* Tabs */}
+        <View style={[styles.tabsContainer, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }]}>
+          {['description', 'details', 'reviews'].map((tab) => (
             <TouchableOpacity
-              style={[styles.tab, selectedTab === 'description' && styles.activeTab]}
-              onPress={() => setSelectedTab('description')}
+              key={tab}
+              style={[styles.tab, selectedTab === tab && [styles.activeTab, { backgroundColor: currentTheme.card }]]}
+              onPress={() => setSelectedTab(tab)}
             >
-              <Text style={[styles.tabText, selectedTab === 'description' && styles.activeTabText]}>
-                Description
+              <Text style={[
+                styles.tabText,
+                { color: currentTheme.textSecondary },
+                selectedTab === tab && { color: currentTheme.primary, fontWeight: '800' }
+              ]}>
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.tab, selectedTab === 'details' && styles.activeTab]}
-              onPress={() => setSelectedTab('details')}
-            >
-              <Text style={[styles.tabText, selectedTab === 'details' && styles.activeTabText]}>
-                Details
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.tab, selectedTab === 'reviews' && styles.activeTab]}
-              onPress={() => setSelectedTab('reviews')}
-            >
-              <Text style={[styles.tabText, selectedTab === 'reviews' && styles.activeTabText]}>
-                Reviews
-              </Text>
-            </TouchableOpacity>
-          </View>
+          ))}
+        </View>
 
-          {/* Tab Content */}
+        {/* Tab Content */}
+        <View style={styles.tabContent}>
           {selectedTab === 'description' && (
-            <View style={styles.tabContent}>
-              <Text style={styles.sectionTitle}>About this book</Text>
-              <Text style={styles.description}>{book.description}</Text>
+            <>
+              <Text style={[styles.sectionTitle, { color: currentTheme.text }]}>About this book</Text>
+              <Text style={[styles.description, { color: currentTheme.textSecondary }]}>{book.description}</Text>
 
-              <Text style={styles.sectionTitle}>Key Highlights</Text>
+              <Text style={[styles.sectionTitle, { color: currentTheme.text, marginTop: 24 }]}>Key Highlights</Text>
               {book.highlights.map((highlight, index) => (
                 <View key={index} style={styles.highlightItem}>
-                  <Ionicons name="checkmark" size={16} color="#28A745" />
-                  <Text style={styles.highlightText}>{highlight}</Text>
+                  <Ionicons name="checkmark" size={16} color={currentTheme.primary} />
+                  <Text style={[styles.highlightText, { color: currentTheme.textSecondary }]}>{highlight}</Text>
                 </View>
               ))}
-            </View>
+            </>
           )}
 
           {selectedTab === 'details' && (
-            <View style={styles.tabContent}>
-              <Text style={styles.sectionTitle}>Product Details</Text>
+            <>
+              <Text style={[styles.sectionTitle, { color: currentTheme.text }]}>Product Details</Text>
               <View style={styles.detailsTable}>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>ISBN</Text>
-                  <Text style={styles.detailValue}>{book.isbn}</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Pages</Text>
-                  <Text style={styles.detailValue}>{book.pages}</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Language</Text>
-                  <Text style={styles.detailValue}>{book.language}</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Publication Date</Text>
-                  <Text style={styles.detailValue}>{book.publishDate}</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Format</Text>
-                  <Text style={styles.detailValue}>{book.format}</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Publisher</Text>
-                  <Text style={styles.detailValue}>{book.publisher}</Text>
-                </View>
+                {[
+                  { label: 'ISBN', value: book.isbn },
+                  { label: 'Pages', value: book.pages },
+                  { label: 'Language', value: book.language },
+                  { label: 'Format', value: book.format },
+                  { label: 'Publisher', value: book.publisher }
+                ].map((detail, idx) => (
+                  <View key={idx} style={[styles.detailRow, { borderBottomColor: currentTheme.border }]}>
+                    <Text style={[styles.detailLabel, { color: currentTheme.textSecondary }]}>{detail.label}</Text>
+                    <Text style={[styles.detailValue, { color: currentTheme.text }]}>{detail.value}</Text>
+                  </View>
+                ))}
               </View>
-            </View>
+            </>
           )}
 
           {selectedTab === 'reviews' && (
-            <View style={styles.tabContent}>
+            <>
               <View style={styles.reviewsHeader}>
-                <Text style={styles.sectionTitle}>Customer Reviews</Text>
-                <View style={styles.reviewsSummary}>
+                <Text style={[styles.sectionTitle, { color: currentTheme.text }]}>Customer Reviews</Text>
+                <View style={[styles.reviewsSummary, { backgroundColor: currentTheme.card, borderColor: currentTheme.border }]}>
                   <View style={styles.averageRating}>
-                    <Text style={styles.averageRatingNumber}>{book.rating}</Text>
+                    <Text style={[styles.averageRatingNumber, { color: currentTheme.text }]}>{book.rating}</Text>
                     <View style={styles.averageRatingStars}>
                       {renderStars(book.rating, 16)}
                     </View>
-                    <Text style={styles.totalReviews}>{book.reviewCount} reviews</Text>
+                    <Text style={[styles.totalReviews, { color: currentTheme.textSecondary }]}>{book.reviewCount} reviews</Text>
                   </View>
                 </View>
               </View>
@@ -388,38 +362,39 @@ export default function BookDetailsScreen() {
                 <ReviewItem key={review.id} review={review} />
               ))}
 
-              <TouchableOpacity style={styles.viewAllReviewsButton}>
-                <Text style={styles.viewAllReviewsText}>View All Reviews</Text>
+              <TouchableOpacity style={[styles.viewAllReviewsButton, { borderColor: currentTheme.primary }]}>
+                <Text style={[styles.viewAllReviewsText, { color: currentTheme.primary }]}>View All Reviews</Text>
               </TouchableOpacity>
-            </View>
+            </>
           )}
-
-          {/* Related Books */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Related Books</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View style={styles.relatedBooksContainer}>
-                {relatedBooks.map(relatedBook => (
-                  <RelatedBookCard key={relatedBook.id} book={relatedBook} />
-                ))}
-              </View>
-            </ScrollView>
-          </View>
-
-          <View style={{ height: 120 }} />
-        </ScrollView>
-
-        {/* Bottom Actions */}
-        <View style={styles.bottomActions}>
-          <TouchableOpacity style={styles.addToCartButton} onPress={handleAddToCart}>
-            <Ionicons name="cart-outline" size={20} color="#6200ea" />
-            <Text style={styles.addToCartText}>Add to Cart</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.buyNowButton} onPress={handleBuyNow}>
-            <Text style={styles.buyNowText}>Buy Now</Text>
-          </TouchableOpacity>
         </View>
+
+        {/* Related Books */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: currentTheme.text, paddingHorizontal: 24 }]}>Related Books</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 24 }}>
+            {relatedBooks.map(relatedBook => (
+              <RelatedBookCard key={relatedBook.id} book={relatedBook} />
+            ))}
+          </ScrollView>
+        </View>
+
+        <View style={{ height: 120 }} />
+      </ScrollView>
+
+      {/* Bottom Actions */}
+      <View style={[styles.bottomActions, { backgroundColor: currentTheme.card, borderTopColor: currentTheme.border }]}>
+        <TouchableOpacity
+          style={[styles.addToCartButton, { borderColor: currentTheme.primary, backgroundColor: isDarkMode ? 'rgba(167, 139, 250, 0.1)' : 'rgba(139, 92, 246, 0.05)' }]}
+          onPress={handleAddToCart}
+        >
+          <Ionicons name="cart-outline" size={20} color={currentTheme.primary} />
+          <Text style={[styles.addToCartText, { color: currentTheme.primary }]}>Add to Cart</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.buyNowButton, { backgroundColor: currentTheme.primary }]} onPress={handleBuyNow}>
+          <Text style={styles.buyNowText}>Buy Now</Text>
+        </TouchableOpacity>
       </View>
-    </>
+    </View>
   );
 }
