@@ -7,15 +7,18 @@ import EditProfileScreen from "../screens/SettingsScreen/EditProfileScreen"
 import YourOrdersScreen from "../screens/SettingsScreen/YourOrders";
 import OrderDetailsScreen from "../screens/SettingsScreen/YourOrders/OrderDetails";
 import FavoritesScreen from "../screens/SettingsScreen/FavoritesScreen";
+import ReaderScreen from "../screens/ReaderScreen";
+
 export type TabParamList = {
     TabNavigator: any
     "Book Details": any
     "See All": any
     SearchScreen: undefined
-    "Edit Profile":any
-    "Your Orders":any
-    "Order Details":any
-    "Favorites":any
+    "Edit Profile": any
+    "Your Orders": any
+    "Order Details": any
+    "Favorites": any
+    "Reader": { bookId: number; title: string };
 };
 
 const Stack = createNativeStackNavigator<TabParamList>()
@@ -34,7 +37,7 @@ export default function AppNavigator() {
                 component={SearchScreen}
                 options={{ headerShown: false }}
             />
-             <Stack.Screen
+            <Stack.Screen
                 name="Edit Profile"
                 component={EditProfileScreen}
                 options={{ headerShown: false }}
@@ -50,6 +53,11 @@ export default function AppNavigator() {
             <Stack.Screen
                 name="Favorites"
                 component={FavoritesScreen}
+            />
+            <Stack.Screen
+                name="Reader"
+                component={ReaderScreen}
+                options={{ headerShown: false }}
             />
         </Stack.Navigator>
     )

@@ -1,0 +1,26 @@
+export const THEME = {
+    light: {
+        background: ['#F8FAFC', '#F1F5F9'],
+        card: 'rgba(255, 255, 255, 0.75)',
+        glass: 'rgba(255, 255, 255, 0.4)',
+        border: 'rgba(255, 255, 255, 0.5)',
+        text: '#111827',
+        textSecondary: '#4B5563',
+        primary: '#8B5CF6',
+        shape1: '#DDD6FE',
+        shape2: '#C084FC',
+        iconBg: 'rgba(139, 92, 246, 0.1)',
+    },
+    dark: {
+        background: ['#020617', '#0F172A'],
+        card: 'rgba(15, 23, 42, 0.6)',
+        glass: 'rgba(30, 41, 59, 0.4)',
+        border: 'rgba(255, 255, 255, 0.08)',
+        text: '#F8FAFC',
+        textSecondary: '#94A3B8',
+        primary: '#A78BFA',
+        shape1: '#4C1D95',
+        shape2: '#7C3AED',
+        iconBg: 'rgba(167, 139, 250, 0.15)',
+    },
+};

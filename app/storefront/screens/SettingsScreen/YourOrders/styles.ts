@@ -1,191 +1,224 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, Dimensions, Platform } from "react-native";
+
+const { width, height } = Dimensions.get('window');
+
+const COLORS = {
+  primary: '#8B5CF6',
+  white: '#FFFFFF',
+  text: '#1F2937',
+  textSecondary: '#6B7280',
+  success: '#10B981',
+  pending: '#F59E0B',
+  danger: '#EF4444',
+  border: 'rgba(255, 255, 255, 0.5)',
+};
 
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#7C3AED',
   },
+
+  // Decorative Background shapes
+  bgShape1: {
+    position: 'absolute',
+    top: -height * 0.1,
+    right: -width * 0.2,
+    width: width * 0.8,
+    height: width * 0.8,
+    borderRadius: (width * 0.8) / 2,
+    backgroundColor: '#C084FC',
+    opacity: 0.5,
+  },
+  bgShape2: {
+    position: 'absolute',
+    bottom: -height * 0.1,
+    left: -width * 0.3,
+    width: width,
+    height: width,
+    borderRadius: width / 2,
+    backgroundColor: '#8B5CF6',
+    opacity: 0.4,
+  },
+
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 50,
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'ios' ? 60 : 40,
+    paddingBottom: 20,
+    zIndex: 10,
   },
   backButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     padding: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   headerTitle: {
     flex: 1,
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: 24,
+    fontWeight: '900',
+    color: '#FFFFFF',
     textAlign: 'center',
+    letterSpacing: -1,
+    marginRight: 44, // Balance back button
   },
-  headerSpacer: {
-    width: 40,
+
+  listContent: {
+    paddingHorizontal: 20,
+    paddingBottom: 100,
   },
-  filterContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#fff',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  filterTab: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginRight: 8,
-    borderRadius: 20,
-    backgroundColor: '#f8f9fa',
-  },
-  activeFilterTab: {
-    backgroundColor: '#6200ea',
-  },
-  filterText: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
-  },
-  activeFilterText: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-  listContainer: {
-    padding: 16,
-  },
+
   orderCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 24,
+    padding: 20,
     marginBottom: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
+    borderWidth: 1.5,
+    borderColor: COLORS.border,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
   },
   orderHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(139, 92, 246, 0.1)',
   },
-  orderInfo: {
-    flex: 1,
-  },
-  orderId: {
+  orderNumber: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 4,
-  },
-  orderDate: {
-    fontSize: 14,
-    color: '#666',
+    fontWeight: '800',
+    color: COLORS.text,
   },
   statusBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
+    paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: 8,
   },
   statusText: {
-    fontSize: 12,
-    fontWeight: '600',
-    marginLeft: 4,
+    fontSize: 11,
+    fontWeight: '900',
+    textTransform: 'uppercase',
   },
-  orderContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  productImage: {
-    width: 60,
-    height: 80,
-    borderRadius: 8,
-    backgroundColor: '#f0f0f0',
-  },
+
   orderDetails: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  productTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    lineHeight: 20,
-    marginBottom: 4,
-  },
-  moreItems: {
-    fontSize: 14,
-    color: '#6200ea',
-    marginBottom: 4,
-  },
-  totalAmount: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#2ecc71',
-    marginBottom: 4,
-  },
-  estimatedDelivery: {
-    fontSize: 12,
-    color: '#666',
-  },
-  orderActions: {
     flexDirection: 'row',
-    borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
-    paddingTop: 12,
+    marginBottom: 16,
   },
-  actionButton: {
+  bookImageContainer: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: '#F3F4F6',
+  },
+  bookImage: {
+    width: 60,
+    height: 90,
+  },
+  orderMeta: {
     flex: 1,
+    marginLeft: 16,
+    justifyContent: 'center',
+  },
+  orderDate: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    marginBottom: 4,
+    fontWeight: '500',
+  },
+  itemsCount: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: COLORS.text,
+    marginBottom: 4,
+  },
+  orderTotal: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: COLORS.primary,
+  },
+
+  actionButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  viewButton: {
+    flex: 1,
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    paddingVertical: 12,
+    borderRadius: 14,
     alignItems: 'center',
-    paddingVertical: 8,
-    marginHorizontal: 4,
-    borderWidth: 1,
-    borderColor: '#6200ea',
-    borderRadius: 6,
+    borderWidth: 1.5,
+    borderColor: COLORS.primary,
   },
-  actionButtonText: {
-    color: '#6200ea',
-    fontSize: 14,
-    fontWeight: '600',
+  viewButtonText: {
+    color: COLORS.primary,
+    fontSize: 13,
+    fontWeight: '800',
+    textTransform: 'uppercase',
   },
-  emptyContainer: {
+  trackButton: {
+    flex: 1,
+    backgroundColor: COLORS.primary,
+    paddingVertical: 12,
+    borderRadius: 14,
+    alignItems: 'center',
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  trackButtonText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+  },
+
+  emptyState: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 40,
+    marginTop: -50,
   },
   emptyTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: '900',
+    color: '#FFFFFF',
     marginTop: 20,
-    marginBottom: 12,
+    marginBottom: 10,
   },
   emptyText: {
-    fontSize: 16,
-    color: '#666',
+    fontSize: 15,
+    color: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'center',
-    lineHeight: 22,
     marginBottom: 30,
   },
   shopButton: {
-    backgroundColor: '#6200ea',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 30,
+    paddingVertical: 16,
+    borderRadius: 18,
   },
   shopButtonText: {
-    color: '#fff',
+    color: COLORS.primary,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '800',
+    textTransform: 'uppercase',
   },
 });

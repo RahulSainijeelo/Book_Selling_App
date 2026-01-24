@@ -7,15 +7,15 @@ import AppNavigator from './app/shared/navigation/AppNavigator';
 function RootNavigator() {
   const { isLoggedIn, user } = useAuthStore();
 
-  if (!isLoggedIn) {
-    return <AppNavigator/>;
-  }
-
-  if (user?.role === 'SELLER') {
-    return <SellerNavigator />;
-  } else {
-    return <UserNavigator />;
-  }
+  // if (!isLoggedIn) {
+  //   return <AppNavigator/>;
+  // }
+  return <UserNavigator />
+  // if (user?.role === 'SELLER') {
+  //   return <SellerNavigator />;
+  // } else {
+  //   return <UserNavigator />;
+  // }
 }
 
 export default function App() {

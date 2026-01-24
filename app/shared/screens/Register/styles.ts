@@ -1,323 +1,301 @@
-import { StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet, Dimensions, Platform } from "react-native";
 
 const { width, height } = Dimensions.get('window');
 
 export default StyleSheet.create({
   keyboardAvoidingView: {
     flex: 1,
-    backgroundColor: '#8B5CF6',
   },
   container: {
     flex: 1,
-    backgroundColor: '#8B5CF6',
   },
 
-  // Header
+  // Background shapes
+  bgShape1: {
+    position: 'absolute',
+    top: -height * 0.15,
+    right: -width * 0.25,
+    width: width * 0.9,
+    height: width * 0.9,
+    borderRadius: (width * 0.9) / 2,
+    opacity: 0.6,
+  },
+  bgShape2: {
+    position: 'absolute',
+    bottom: -height * 0.1,
+    left: -width * 0.35,
+    width: width * 1.1,
+    height: width * 1.1,
+    borderRadius: (width * 1.1) / 2,
+    opacity: 0.4,
+  },
+  bgShape3: {
+    position: 'absolute',
+    top: height * 0.3,
+    left: width * 0.1,
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    opacity: 0.1,
+  },
+
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 50,
     paddingHorizontal: 24,
+    paddingTop: Platform.OS === 'ios' ? 70 : 50,
     paddingBottom: 20,
-    zIndex: 1000,
   },
   backButton: {
-    padding: 8,
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+      },
+      android: {
+        elevation: 6,
+      },
+    }),
   },
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 'auto',
   },
   headerText: {
-    color: '#ffffff',
     fontSize: 14,
-    opacity: 0.9,
-    marginRight: 8,
+    marginRight: 10,
+    fontWeight: '500',
   },
   headerLink: {
-    color: '#ffffff',
     fontSize: 14,
-    fontWeight: '600',
-  },
-  contentContainer: {
-    flex: 1,
-  },
-
-  brandContainer: {
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    // paddingBottom: 30,
-  },
-  brandName: {
-    fontSize: 36,
-    fontWeight: '800',
-    color: '#ffffff',
-    letterSpacing: -1,
-    marginBottom: 8,
-  },
-  stepIndicator: {
-    fontSize: 14,
-    color: '#ffffff',
-    opacity: 0.8,
+    fontWeight: '900',
   },
 
   scrollViewContent: {
     flexGrow: 1,
-  },
-  formContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0
-  },
-  formActual: {
-    marginHorizontal: 5,
-    flex: 1,
-    backgroundColor: '#ffffff',
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    alignSelf: 'stretch',
     paddingHorizontal: 24,
-    paddingTop: 32,
+    paddingBottom: 60,
+  },
+  brandContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 40,
+  },
+  logoDot: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    marginRight: 12,
+  },
+  brandName: {
+    textAlign: 'center',
+    fontSize: 34,
+    fontWeight: '900',
+    letterSpacing: -1.5,
+  },
+  stepBadge: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 12,
+    marginLeft: 16,
+  },
+  stepIndicator: {
+    fontSize: 12,
+    fontWeight: '900',
+  },
+
+  formActual: {
+    padding: 28,
+    borderRadius: 36,
+    borderWidth: 1.5,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 12 },
+        shadowOpacity: 0.1,
+        shadowRadius: 30,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
   },
   welcomeTitle: {
-    fontSize: 25,
-    fontWeight: '700',
-    color: '#1a1a1a',
-    marginBottom: 8,
-    textAlign: 'center',
+    fontSize: 30,
+    fontWeight: '900',
+    letterSpacing: -1,
+    marginBottom: 10,
   },
   welcomeSubtitle: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    marginBottom: 32,
-    lineHeight: 22,
+    fontSize: 15,
+    lineHeight: 24,
+    marginBottom: 3,
   },
 
-
-  roleSection: {
-
-  },
   sectionLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 16,
-    textAlign: 'center',
+    fontSize: 14,
+    fontWeight: '800',
+    marginBottom: 18,
+    marginLeft: 6,
   },
   roleOptions: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 16,
-    marginBottom:10
+    marginBottom: 36,
   },
   roleCard: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
-    borderRadius: 16,
-    padding: 7,
+    padding: 24,
+    borderRadius: 24,
+    borderWidth: 1.5,
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
+    marginHorizontal: 8,
   },
   roleCardSelected: {
-    backgroundColor: '#f3f0ff',
-    borderColor: '#8B5CF6',
+    // defined in component
   },
   roleText: {
-    marginTop: 8,
     fontSize: 14,
-    fontWeight: '600',
-    color: '#666',
+    fontWeight: '800',
+    marginTop: 12,
   },
   roleTextSelected: {
-    color: '#8B5CF6',
-  },
-
-  // User Summary (Step 2)
-  userSummary: {
-    backgroundColor: '#f8f9fa',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 24,
-  },
-  summaryItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 6,
-  },
-  summaryLabel: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
-  },
-  summaryValue: {
-    fontSize: 14,
-    color: '#333',
-    fontWeight: '600',
+    // defined in component
   },
 
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: 24,
   },
   inputLabel: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
-    marginLeft: 4,
+    fontWeight: '800',
+    marginBottom: 10,
+    marginLeft: 6,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
+    borderRadius: 18,
+    paddingHorizontal: 18,
+    height: 60,
     borderWidth: 1.5,
-    borderColor: '#e9ecef',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    minHeight: 45,
-  },
-  inputError: {
-    borderColor: '#ff4757',
-    backgroundColor: '#fff5f5',
   },
   input: {
     flex: 1,
     fontSize: 16,
-    color: '#333',
-    paddingVertical: 0,
+    fontWeight: '600',
   },
-  passwordInput: {
-    paddingRight: 12,
-  },
-  inputIcon: {
-    marginLeft: 8,
+  inputError: {
+    borderColor: '#EF4444',
   },
   eyeButton: {
-    padding: 4,
-    marginLeft: 8,
-  },
-  errorText: {
-    fontSize: 12,
-    color: '#ff4757',
-    marginTop: 4,
-    marginLeft: 4,
+    padding: 10,
   },
 
-  // Password Strength
-  passwordStrengthContainer: {
+  continueButton: {
+    height: 60,
+    borderRadius: 20,
     flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 8,
-    paddingHorizontal: 4,
-    marginBottom: 12,
+    marginTop: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#8B5CF6',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.35,
+        shadowRadius: 15,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
+  },
+  continueButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '900',
+    marginRight: 10,
+  },
+  disabledButton: {
+    opacity: 0.4,
+  },
+
+  passwordStrengthContainer: {
+    marginBottom: 28,
   },
   passwordStrengthBars: {
     flexDirection: 'row',
-    alignItems: 'center',
+    height: 5,
+    marginBottom: 10,
   },
   strengthBar: {
-    width: 24,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#e9ecef',
-    marginRight: 4,
+    flex: 1,
+    height: '100%',
+    borderRadius: 3,
+    marginHorizontal: 3,
   },
   weakStrength: {
-    backgroundColor: '#ff4757',
+    backgroundColor: '#EF4444',
   },
   mediumStrength: {
-    backgroundColor: '#ffa502',
+    backgroundColor: '#F59E0B',
   },
   strongStrength: {
-    backgroundColor: '#2ed573',
+    backgroundColor: '#10B981',
   },
   passwordStrengthText: {
     fontSize: 12,
-    color: '#666',
-    fontWeight: '500',
+    fontWeight: '800',
+    textAlign: 'right',
   },
 
-  // Buttons
-  continueButton: {
-    backgroundColor: '#8B5CF6',
-    borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 12,
-    shadowColor: '#8B5CF6',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  continueButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#ffffff',
-    marginRight: 8,
-  },
   signUpButton: {
-    backgroundColor: '#8B5CF6',
-    borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    alignItems: 'center',
+    height: 60,
+    borderRadius: 20,
     justifyContent: 'center',
-    marginTop: 12,
-    marginBottom: 16,
-    shadowColor: '#8B5CF6',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  disabledButton: {
-    backgroundColor: '#bbb',
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-  signUpButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#ffffff',
+    alignItems: 'center',
+    marginTop: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#8B5CF6',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.35,
+        shadowRadius: 15,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
   },
   loadingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+  },
+  signUpButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '900',
   },
 
-  // Terms
   termsText: {
-    fontSize: 13,
-    color: '#666',
+    fontSize: 12,
     textAlign: 'center',
-    lineHeight: 18,
-    paddingHorizontal: 20,
+    lineHeight: 20,
+    marginTop: 30,
   },
   termsLink: {
-    color: '#8B5CF6',
-    fontWeight: '500',
+    fontWeight: '900',
   },
-
-  // Bottom Padding
   bottomPadding: {
-    height: 10
+    height: 30,
   },
 });

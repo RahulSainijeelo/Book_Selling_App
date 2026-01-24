@@ -13,6 +13,9 @@ import Ionicons from '@react-native-vector-icons/ionicons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { TabParamList } from '../../../navigation/AppNavigator';
 import styles from './styles';
+import { useThemeStore } from '../../../../shared/store/useThemeStore';
+import { THEME } from '../../../../shared/theme/constants';
+
 type FavoritesScreenNavigationProp = NativeStackNavigationProp<TabParamList>;
 
 interface FavoriteBook {
@@ -111,6 +114,9 @@ export default function FavoritesScreen() {
   const [showSortModal, setShowSortModal] = useState(false);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const { isDarkMode } = useThemeStore();
+
+  const currentTheme = isDarkMode ? THEME.dark : THEME.light;
 
   // Filter and sort favorites
   const filteredFavorites = favorites
@@ -216,49 +222,40 @@ export default function FavoritesScreen() {
 
   const renderStars = (rating: number) => {
     const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 !== 0;
-
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(<Ionicons key={i} name="star" size={12} color="#FFD700" />);
-    }
-    if (hasHalfStar) {
-      stars.push(<Ionicons key="half" name="star-half" size={12} color="#FFD700" />);
-    }
-    for (let i = stars.length; i < 5; i++) {
-      stars.push(<Ionicons key={`empty-${i}`} name="star-outline" size={12} color="#DDD" />);
+    for (let i = 0; i < 5; i++) {
+      stars.push(
+        <Ionicons
+          key={i}
+          name={i < Math.floor(rating) ? "star" : i < rating ? "star-half" : "star-outline"}
+          size={12}
+          color="#FFD700"
+        />
+      );
     }
     return <View style={styles.starsContainer}>{stars}</View>;
   };
 
   const BookItemGrid = ({ book }: { book: FavoriteBook }) => (
     <TouchableOpacity
-      style={[styles.gridBookCard, !book.inStock && styles.outOfStockCard]}
+      style={[
+        styles.gridBookCard,
+        { backgroundColor: currentTheme.card, borderColor: currentTheme.border },
+        !book.inStock && styles.outOfStockCard
+      ]}
       activeOpacity={0.8}
-      onPress={() => {
-        if (isSelectionMode) {
-          toggleSelection(book.id);
-        } else {
-          navigation.navigate('Book Details', { bookId: book.id });
-        }
-      }}
-      onLongPress={() => {
-        if (!isSelectionMode) {
-          setIsSelectionMode(true);
-          toggleSelection(book.id);
-        }
-      }}
+      onPress={() => isSelectionMode ? toggleSelection(book.id) : navigation.navigate('Book Details' as any, { bookId: book.id })}
+      onLongPress={() => { if (!isSelectionMode) { setIsSelectionMode(true); toggleSelection(book.id); } }}
     >
       {isSelectionMode && (
         <View style={styles.selectionOverlay}>
           <Ionicons
             name={selectedItems.includes(book.id) ? 'checkmark-circle' : 'ellipse-outline'}
             size={24}
-            color={selectedItems.includes(book.id) ? '#6200ea' : '#ccc'}
+            color={selectedItems.includes(book.id) ? currentTheme.primary : '#ccc'}
           />
         </View>
       )}
-      
+
       <View style={styles.bookImageContainer}>
         <Image source={{ uri: book.coverUrl }} style={styles.gridBookImage} />
         {!book.inStock && (
@@ -273,26 +270,30 @@ export default function FavoritesScreen() {
           <Ionicons name="heart" size={16} color="#FF6B6B" />
         </TouchableOpacity>
       </View>
-      
+
       <View style={styles.gridBookInfo}>
-        <Text style={styles.gridBookTitle} numberOfLines={2}>{book.title}</Text>
-        <Text style={styles.gridBookAuthor} numberOfLines={1}>{book.author}</Text>
+        <Text style={[styles.gridBookTitle, { color: currentTheme.text }]} numberOfLines={2}>{book.title}</Text>
+        <Text style={[styles.gridBookAuthor, { color: currentTheme.textSecondary }]} numberOfLines={1}>{book.author}</Text>
         <View style={styles.gridBookFooter}>
           {renderStars(book.rating)}
           <View style={styles.priceContainer}>
-            <Text style={styles.gridBookPrice}>${book.price}</Text>
+            <Text style={[styles.gridBookPrice, { color: currentTheme.primary }]}>${book.price}</Text>
             {book.originalPrice && (
               <Text style={styles.originalPrice}>${book.originalPrice}</Text>
             )}
           </View>
         </View>
         <TouchableOpacity
-          style={[styles.addToCartButton, !book.inStock && styles.disabledButton]}
+          style={[
+            styles.addToCartButton,
+            { backgroundColor: isDarkMode ? 'rgba(167, 139, 250, 0.1)' : 'rgba(139, 92, 246, 0.1)', borderColor: currentTheme.primary },
+            !book.inStock && styles.disabledButton
+          ]}
           onPress={() => addToCart(book)}
           disabled={!book.inStock}
         >
-          <Ionicons name="cart-outline" size={14} color={book.inStock ? '#6200ea' : '#ccc'} />
-          <Text style={[styles.addToCartText, !book.inStock && styles.disabledText]}>
+          <Ionicons name="cart-outline" size={14} color={book.inStock ? currentTheme.primary : '#ccc'} />
+          <Text style={[styles.addToCartText, { color: book.inStock ? currentTheme.primary : '#9CA3AF' }]}>
             {book.inStock ? 'Add to Cart' : 'Out of Stock'}
           </Text>
         </TouchableOpacity>
@@ -302,21 +303,14 @@ export default function FavoritesScreen() {
 
   const BookItemList = ({ book }: { book: FavoriteBook }) => (
     <TouchableOpacity
-      style={[styles.listBookCard, !book.inStock && styles.outOfStockCard]}
+      style={[
+        styles.listBookCard,
+        { backgroundColor: currentTheme.card, borderColor: currentTheme.border },
+        !book.inStock && styles.outOfStockCard
+      ]}
       activeOpacity={0.8}
-      onPress={() => {
-        if (isSelectionMode) {
-          toggleSelection(book.id);
-        } else {
-          navigation.navigate('Book Details', { bookId: book.id });
-        }
-      }}
-      onLongPress={() => {
-        if (!isSelectionMode) {
-          setIsSelectionMode(true);
-          toggleSelection(book.id);
-        }
-      }}
+      onPress={() => isSelectionMode ? toggleSelection(book.id) : navigation.navigate('Book Details' as any, { bookId: book.id })}
+      onLongPress={() => { if (!isSelectionMode) { setIsSelectionMode(true); toggleSelection(book.id); } }}
     >
       {isSelectionMode && (
         <TouchableOpacity
@@ -326,7 +320,7 @@ export default function FavoritesScreen() {
           <Ionicons
             name={selectedItems.includes(book.id) ? 'checkmark-circle' : 'ellipse-outline'}
             size={24}
-            color={selectedItems.includes(book.id) ? '#6200ea' : '#ccc'}
+            color={selectedItems.includes(book.id) ? currentTheme.primary : '#ccc'}
           />
         </TouchableOpacity>
       )}
@@ -341,24 +335,28 @@ export default function FavoritesScreen() {
       </View>
 
       <View style={styles.listBookInfo}>
-        <Text style={styles.listBookTitle} numberOfLines={2}>{book.title}</Text>
-        <Text style={styles.listBookAuthor}>by {book.author}</Text>
+        <Text style={[styles.listBookTitle, { color: currentTheme.text }]} numberOfLines={2}>{book.title}</Text>
+        <Text style={[styles.listBookAuthor, { color: currentTheme.textSecondary }]}>by {book.author}</Text>
         <View style={styles.listRatingContainer}>
           {renderStars(book.rating)}
           <Text style={styles.listRatingText}>({book.reviews})</Text>
         </View>
         <View style={styles.listPriceContainer}>
-          <Text style={styles.listBookPrice}>${book.price}</Text>
+          <Text style={[styles.listBookPrice, { color: currentTheme.primary }]}>${book.price}</Text>
           {book.originalPrice && (
             <Text style={styles.listOriginalPrice}>${book.originalPrice}</Text>
           )}
         </View>
         <TouchableOpacity
-          style={[styles.listAddToCartButton, !book.inStock && styles.disabledButton]}
+          style={[
+            styles.listAddToCartButton,
+            { backgroundColor: isDarkMode ? 'rgba(167, 139, 250, 0.1)' : 'rgba(139, 92, 246, 0.1)', borderColor: currentTheme.primary },
+            !book.inStock && styles.disabledButton
+          ]}
           onPress={() => addToCart(book)}
           disabled={!book.inStock}
         >
-          <Text style={[styles.listAddToCartText, !book.inStock && styles.disabledText]}>
+          <Text style={[styles.listAddToCartText, { color: book.inStock ? currentTheme.primary : '#9CA3AF' }]}>
             {book.inStock ? 'Add to Cart' : 'Out of Stock'}
           </Text>
         </TouchableOpacity>
@@ -376,11 +374,11 @@ export default function FavoritesScreen() {
   const SortModal = () => (
     showSortModal && (
       <View style={styles.sortModalOverlay}>
-        <View style={styles.sortModal}>
+        <View style={[styles.sortModal, { backgroundColor: currentTheme.card }]}>
           <View style={styles.sortHeader}>
-            <Text style={styles.sortTitle}>Sort by</Text>
+            <Text style={[styles.sortTitle, { color: currentTheme.text }]}>Sort by</Text>
             <TouchableOpacity onPress={() => setShowSortModal(false)}>
-              <Ionicons name="close" size={24} color="#333" />
+              <Ionicons name="close" size={24} color={currentTheme.text} />
             </TouchableOpacity>
           </View>
           {sortOptions.map((option) => (
@@ -394,12 +392,12 @@ export default function FavoritesScreen() {
             >
               <Text style={[
                 styles.sortOptionText,
-                sortBy === option.value && styles.sortOptionSelected
+                { color: sortBy === option.value ? currentTheme.primary : currentTheme.text }
               ]}>
                 {option.label}
               </Text>
               {sortBy === option.value && (
-                <Ionicons name="checkmark" size={20} color="#6200ea" />
+                <Ionicons name="checkmark" size={20} color={currentTheme.primary} />
               )}
             </TouchableOpacity>
           ))}
@@ -410,117 +408,136 @@ export default function FavoritesScreen() {
 
   const EmptyState = () => (
     <View style={styles.emptyState}>
-      <Ionicons name="heart-outline" size={80} color="#ccc" />
-      <Text style={styles.emptyTitle}>No favorites yet</Text>
-      <Text style={styles.emptyText}>
+      <Ionicons name="heart-outline" size={80} color={isDarkMode ? 'rgba(255,255,255,0.2)' : '#ccc'} />
+      <Text style={[styles.emptyTitle, { color: isDarkMode ? '#FFF' : '#333' }]}>No favorites yet</Text>
+      <Text style={[styles.emptyText, { color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.5)' }]}>
         Books you like will appear here. Start browsing to find your next favorite read!
       </Text>
       <TouchableOpacity
-        style={styles.browseButton}
+        style={[styles.browseButton, { backgroundColor: currentTheme.primary }]}
         onPress={() => navigation.navigate('TabNavigator')}
       >
-        <Text style={styles.browseButtonText}>Browse Books</Text>
+        <Text style={[styles.browseButtonText, { color: '#FFF' }]}>Browse Books</Text>
       </TouchableOpacity>
     </View>
   );
 
   return (
-    <>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      <View style={styles.container}>
-        <View style={styles.header}>
-          {isSelectionMode && (
-            <>
-              <TouchableOpacity
-                style={styles.cancelSelectionButton}
-                onPress={() => {
-                  setIsSelectionMode(false);
-                  setSelectedItems([]);
-                }}
-              >
-                <Ionicons name="close" size={24} color="#333" />
-              </TouchableOpacity>
-              <Text style={styles.selectionTitle}>
-                {selectedItems.length} selected
-              </Text>
-              <TouchableOpacity style={styles.selectAllButton} onPress={selectAll}>
-                <Text style={styles.selectAllText}>
-                  {selectedItems.length === filteredFavorites.length ? 'Deselect All' : 'Select All'}
-                </Text>
-              </TouchableOpacity>
-            </>
-          )}
-        </View>
+    <View style={[styles.container, { backgroundColor: isDarkMode ? currentTheme.background[1] : currentTheme.background[0] }]}>
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} translucent backgroundColor="transparent" />
 
-        {!isSelectionMode && (
+      {/* Decorative Background Shapes (Matching Auth) */}
+      <View style={[styles.bgShape1, { backgroundColor: currentTheme.shape2 }]} />
+      <View style={[styles.bgShape2, { backgroundColor: currentTheme.shape1 }]} />
+      <View style={[styles.bgShape3, { backgroundColor: currentTheme.shape1, opacity: 0.1 }]} />
+
+      <View style={styles.header}>
+        {isSelectionMode ? (
           <>
-            <View style={styles.controlsContainer}>
-              <Text style={styles.resultsText}>
-                {filteredFavorites.length} book{filteredFavorites.length !== 1 ? 's' : ''}
+            <TouchableOpacity
+              style={styles.cancelSelectionButton}
+              onPress={() => {
+                setIsSelectionMode(false);
+                setSelectedItems([]);
+              }}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="close-outline" size={24} color={isDarkMode ? '#FFF' : '#333'} />
+            </TouchableOpacity>
+            <Text style={[styles.selectionTitle, { color: isDarkMode ? '#FFF' : '#333' }]}>
+              {selectedItems.length} selected
+            </Text>
+            <TouchableOpacity style={styles.selectAllButton} onPress={selectAll} activeOpacity={0.7}>
+              <Text style={[styles.selectAllText, { color: isDarkMode ? '#FFF' : '#333' }]}>
+                {selectedItems.length === filteredFavorites.length ? 'Deselect' : 'All'}
               </Text>
-              <View style={styles.controls}>
-                <TouchableOpacity
-                  style={styles.sortButton}
-                  onPress={() => setShowSortModal(true)}
-                >
-                  <Ionicons name="funnel-outline" size={18} color="#666" />
-                  <Text style={styles.sortButtonText}>Sort</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.viewToggle}
-                  onPress={() => setIsGridView(!isGridView)}
-                >
-                  <Ionicons
-                    name={isGridView ? "list" : "grid"}
-                    size={18}
-                    color="#666"
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <>
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              style={styles.cancelSelectionButton}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#FFF' : '#333'} />
+            </TouchableOpacity>
+            <Text style={[styles.headerTitle, { color: isDarkMode ? '#FFF' : '#333' }]}>Favorites</Text>
+            <View style={{ width: 44 }} />
           </>
         )}
+      </View>
 
-        {/* Content */}
-        {filteredFavorites.length === 0 ? (
-          <EmptyState />
-        ) : (
-          <FlatList
-            data={filteredFavorites}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }) =>
-              isGridView ? <BookItemGrid book={item} /> : <BookItemList book={item} />
-            }
-            numColumns={isGridView ? 2 : 1}
-            key={isGridView ? 'grid' : 'list'}
-            contentContainerStyle={styles.listContainer}
-            showsVerticalScrollIndicator={false}
-          />
-        )}
-
-        {/* Selection Actions */}
-        {isSelectionMode && selectedItems.length > 0 && (
-          <View style={styles.selectionActions}>
+      {!isSelectionMode && (
+        <View style={styles.controlsContainer}>
+          <Text style={[styles.resultsText, { color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.5)' }]}>
+            {filteredFavorites.length} {filteredFavorites.length === 1 ? 'book' : 'books'} found
+          </Text>
+          <View style={styles.controls}>
             <TouchableOpacity
-              style={styles.selectionActionButton}
-              onPress={addSelectedToCart}
+              style={styles.sortButton}
+              onPress={() => setShowSortModal(true)}
+              activeOpacity={0.7}
             >
-              <Ionicons name="cart-outline" size={20} color="#6200ea" />
-              <Text style={styles.selectionActionText}>Add to Cart</Text>
+              <Ionicons name="options-outline" size={16} color={isDarkMode ? '#FFF' : '#333'} />
+              <Text style={[styles.sortButtonText, { color: isDarkMode ? '#FFF' : '#333' }]}>Sort</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={styles.selectionActionButton}
-              onPress={removeSelected}
+              style={styles.viewToggle}
+              onPress={() => setIsGridView(!isGridView)}
+              activeOpacity={0.7}
             >
-              <Ionicons name="trash-outline" size={20} color="#ff4757" />
-              <Text style={[styles.selectionActionText, { color: '#ff4757' }]}>Remove</Text>
+              <Ionicons
+                name={isGridView ? "list-outline" : "grid-outline"}
+                size={18}
+                color={isDarkMode ? '#FFF' : '#333'}
+              />
             </TouchableOpacity>
           </View>
-        )}
+        </View>
+      )}
 
-        {/* Sort Modal */}
-        <SortModal />
-      </View>
-    </>
+      {/* Content */}
+      {filteredFavorites.length === 0 ? (
+        <EmptyState />
+      ) : (
+        <FlatList
+          data={filteredFavorites}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) =>
+            isGridView ? <BookItemGrid book={item} /> : <BookItemList book={item} />
+          }
+          numColumns={isGridView ? 2 : 1}
+          key={isGridView ? 'grid' : 'list'}
+          contentContainerStyle={styles.listContainer}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
+
+      {/* Selection Actions */}
+      {isSelectionMode && selectedItems.length > 0 && (
+        <View style={[styles.selectionActions, { backgroundColor: currentTheme.card }]}>
+          <TouchableOpacity
+            style={styles.selectionActionButton}
+            onPress={addSelectedToCart}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="cart-outline" size={20} color={currentTheme.primary} />
+            <Text style={[styles.selectionActionText, { color: currentTheme.primary }]}>Cart</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.selectionActionButton}
+            onPress={removeSelected}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="trash-outline" size={20} color="#EF4444" />
+            <Text style={[styles.selectionActionText, { color: '#EF4444' }]}>Remove</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Sort Modal */}
+      <SortModal />
+    </View>
   );
 }

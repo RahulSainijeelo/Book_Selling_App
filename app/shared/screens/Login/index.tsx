@@ -1,445 +1,199 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   TextInput,
   TouchableOpacity,
-  StatusBar,
-  Alert,
-  ActivityIndicator,
-  ScrollView,
   KeyboardAvoidingView,
   Platform,
-  TouchableWithoutFeedback,
+  Dimensions,
+  Animated,
+  StatusBar,
+  ScrollView,
   Keyboard,
+  TouchableWithoutFeedback,
+  Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import Ionicons from '@react-native-vector-icons/ionicons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { jwtDecode } from 'jwt-decode';
-import api from '../../../services/api.service';
-import { useAuthStore } from "../../store/useAuthStore";
-import loginStyles from './styles';
+import Ionicons from '@react-native-vector-icons/ionicons';
+import styles from './styles';
+import { useThemeStore } from '../../store/useThemeStore';
+import { THEME } from '../../theme/constants';
 
-interface JWTPayload {
-  id: string;
-  iat: number;
-  exp: number;
-  name?: string;
-  email?: string;
-  role?: string;
-  [key: string]: any;
-}
+const { width } = Dimensions.get('window');
 
-type LoginScreenNavigationProp = NativeStackNavigationProp<any>;
-type UserRole = 'USER' | 'SELLER';
+type RootStackParamList = {
+  Register: undefined;
+  TabNavigator: undefined;
+};
 
-export default function LoginScreen() {
+type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
+const LoginScreen = () => {
   const navigation = useNavigation<LoginScreenNavigationProp>();
-  const { loginUser, setIsLoading: setStoreLoading } = useAuthStore();
-  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<UserRole>('USER');
   const [showPassword, setShowPassword] = useState(false);
-  const [showRoleDropdown, setShowRoleDropdown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
-  // Error states
-  const [emailError, setEmailError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
+  const { isDarkMode } = useThemeStore();
+  const currentTheme = isDarkMode ? THEME.dark : THEME.light;
 
-  const validateEmail = (emailValue: string) => {
-    if (!emailValue.trim()) {
-      setEmailError('Email is required');
-      return false;
-    }
-    if (!isValidEmail(emailValue)) {
-      setEmailError('Please enter a valid email address');
-      return false;
-    }
-    setEmailError('');
-    return true;
-  };
+  // Animations
+  const fadeAnim = useState(new Animated.Value(0))[0];
+  const slideAnim = useState(new Animated.Value(50))[0];
 
-  const validatePassword = (passwordValue: string) => {
-    if (!passwordValue.trim()) {
-      setPasswordError('Password is required');
-      return false;
-    }
-    setPasswordError('');
-    return true;
-  };
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
 
-  const handleEmailChange = (text: string) => {
-    setEmail(text);
-    if (emailError) {
-      validateEmail(text);
-    }
-  };
-
-  const handlePasswordChange = (text: string) => {
-    setPassword(text);
-    if (passwordError) {
-      validatePassword(text);
-    }
-  };
-
-  const handleLogin = async () => {
-    // Clear previous errors
-    setEmailError('');
-    setPasswordError('');
-
-    // Validation
-    const isEmailValid = validateEmail(email);
-    const isPasswordValid = validatePassword(password);
-
-    if (!isEmailValid || !isPasswordValid) {
+  const handleLogin = () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please enter both email and password');
       return;
     }
-
     setIsLoading(true);
-    setStoreLoading(true);
-
-    try {
-      console.log('Attempting to login user...');
-      
-      const loginData = {
-        email: email.trim().toLowerCase(),
-        password: password.trim(),
-        role: role, // Include role in login request
-      };
-
-      console.log('Login data:', { ...loginData, password: '[HIDDEN]' });
-
-      const response = await api.post('/api/auth/login', loginData);
-      console.log('Login response:', response.data);
-
-      if (response.status === 200 || response.status === 201) {
-        const { id, name, email: userEmail, role: userRole, token } = response.data;
-
-        if (!token) {
-          throw new Error('Token not found in response');
-        }
-
-        try {
-          const decodedToken: JWTPayload = jwtDecode(token);
-          
-          console.log('Decoded JWT token:', decodedToken);
-          const currentTime = Date.now() / 1000;
-          if (decodedToken.exp && decodedToken.exp < currentTime) {
-            throw new Error('Token is expired');
-          }
-
-          const user = {
-            id: decodedToken.id || id,
-            name: name || decodedToken.name || '',
-            email: userEmail || decodedToken.email || email.trim(),
-            role: userRole || decodedToken.role || role,
-            
-            ...(decodedToken.avatar && { avatar: decodedToken.avatar }),
-            ...(decodedToken.permissions && { permissions: decodedToken.permissions }),
-   
-            tokenIssuedAt: decodedToken.iat ? new Date(decodedToken.iat * 1000).toISOString() : null,
-            tokenExpiresAt: decodedToken.exp ? new Date(decodedToken.exp * 1000).toISOString() : null,
-          };
-
-          console.log('Constructed user object:', user);
-          loginUser(user, token);
-
-          const roleText = role === 'SELLER' ? 'seller' : 'reader';
-          const expiryDate = decodedToken.exp 
-            ? new Date(decodedToken.exp * 1000).toLocaleDateString() 
-            : 'No expiry';
-
-          Alert.alert(
-            'Welcome Back! 👋', 
-            `Successfully logged in as ${user.name} (${roleText})\n\nToken expires: ${expiryDate}`,
-            [
-              {
-                text: 'Continue',
-                onPress: () => {
-                  navigation.reset({
-                    index: 0,
-                    routes: [{ name: 'MainApp' }],
-                  });
-                }
-              }
-            ]
-          );
-
-        } catch (decodeError) {
-          console.error('JWT decode error:', decodeError);
-          const fallbackUser: any = {
-            id,
-            name,
-            email: userEmail,
-            role: userRole || role,
-          };
-
-          loginUser(fallbackUser, token);
-          
-          const roleText = role === 'SELLER' ? 'seller' : 'reader';
-          Alert.alert(
-            'Welcome Back! 👋', 
-            `Successfully logged in as ${name} (${roleText})`,
-            [
-              {
-                text: 'Continue',
-                onPress: () => {
-                  navigation.reset({
-                    index: 0,
-                    routes: [{ name: 'MainApp' }],
-                  });
-                }
-              }
-            ]
-          );
-        }
-      } else {
-        throw new Error('Unexpected response status');
-      }
-
-    } catch (error: any) {
-      console.error('Login error:', error);
-      
-      if (error.response) {
-        const { status, data } = error.response;
-        
-        switch (status) {
-          case 400:
-            setEmailError(data.message || data.error || 'Invalid credentials');
-            break;
-          case 401:
-            setPasswordError('Invalid password. Please check your credentials.');
-            break;
-          case 403:
-            setEmailError('Account access denied. Please contact support.');
-            break;
-          case 404:
-            setEmailError('Account not found. Please check your email or sign up.');
-            break;
-          case 429:
-            setEmailError('Too many login attempts. Please try again later.');
-            break;
-          case 500:
-            Alert.alert('Server Error', 'Server error. Please try again later.');
-            break;
-          default:
-            setEmailError(data.message || data.error || 'Login failed');
-        }
-        
-      } else if (error.request) {
-        Alert.alert('Network Error', 'Network error. Please check your connection and try again.');
-      } else {
-        Alert.alert('Error', error.message || 'An unexpected error occurred');
-      }
-      
-    } finally {
+    // Simulate API call
+    setTimeout(() => {
       setIsLoading(false);
-      setStoreLoading(false);
-    }
-  };
-
-  const isValidEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const handleForgotPassword = () => {
-    Alert.alert(
-      'Forgot Password',
-      'Password reset functionality will be implemented soon.',
-      [
-        { text: 'OK' }
-      ]
-    );
-  };
-
-  const handleRoleSelect = (selectedRole: UserRole) => {
-    setRole(selectedRole);
-    setShowRoleDropdown(false);
+      navigation.replace('TabNavigator');
+    }, 1500);
   };
 
   return (
-    <KeyboardAvoidingView 
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={loginStyles.keyboardAvoidingView}
-    >
-      <StatusBar barStyle="light-content" backgroundColor="#8B5CF6" />
-      
-      <TouchableWithoutFeedback onPress={() => {
-        Keyboard.dismiss();
-        setShowRoleDropdown(false);
-      }} accessible={false}>
-        <View style={loginStyles.loginContainer}>
-          {/* Header */}
-          <View style={loginStyles.loginHeader}>          
-            <View style={loginStyles.loginHeaderRight}>
-              <Text style={loginStyles.loginHeaderText}>Don't have an account?</Text>
-              <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-                <Text style={loginStyles.loginHeaderLink}>Get started</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+    <View style={[styles.container, { backgroundColor: isDarkMode ? currentTheme.background[1] : currentTheme.background[0] }]}>
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} translucent backgroundColor="transparent" />
 
-          <ScrollView 
-            contentContainerStyle={loginStyles.scrollContainer}
+      {/* Decorative Background shapes */}
+      <View style={[styles.bgShape1, { backgroundColor: currentTheme.shape2 }]} />
+      <View style={[styles.bgShape2, { backgroundColor: currentTheme.shape1 }]} />
+      <View style={[styles.bgShape3, { backgroundColor: currentTheme.shape1, opacity: 0.1 }]} />
+
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
-            bounces={false}
           >
-            <View style={loginStyles.loginFormContainer}>
-              <View style={loginStyles.loginBrandContainer}>
-                <Text style={loginStyles.loginBrandName}>Bookie</Text>
+            <Animated.View style={[
+              styles.content,
+              {
+                opacity: fadeAnim,
+                transform: [{ translateY: slideAnim }]
+              }
+            ]}>
+              {/* Header section */}
+              <View style={styles.header}>
+                <View style={[styles.logoContainer, { backgroundColor: isDarkMode ? 'rgba(139, 92, 246, 0.15)' : 'rgba(139, 92, 246, 0.1)' }]}>
+                  <Ionicons name="book" size={40} color={currentTheme.primary} />
+                </View>
+                <Text style={[styles.title, { color: currentTheme.text }]}>Welcome Back</Text>
+                <Text style={[styles.subtitle, { color: currentTheme.textSecondary }]}>Log in to your account and explore books</Text>
               </View>
 
-              <Text style={loginStyles.loginWelcomeTitle}>Welcome Back</Text>
-              <Text style={loginStyles.loginWelcomeSubtitle}>Enter your details below</Text>
-
-              {/* Role Selection */}
-              <View style={loginStyles.roleSelectionContainer}>
-                <Text style={loginStyles.roleLabel}>Login as</Text>
-                <TouchableOpacity
-                  style={loginStyles.roleSelector}
-                  onPress={() => setShowRoleDropdown(!showRoleDropdown)}
-                  disabled={isLoading}
-                >
-                  <View style={loginStyles.roleSelectorContent}>
-                    <Ionicons 
-                      name={role === 'USER' ? 'person-outline' : 'storefront-outline'} 
-                      size={20} 
-                      color="#8B5CF6" 
+              {/* Form section */}
+              <View style={[styles.form, { backgroundColor: currentTheme.card, borderColor: currentTheme.border }]}>
+                {/* Email Input */}
+                <View style={styles.inputWrapper}>
+                  <Text style={[styles.inputLabel, { color: currentTheme.textSecondary }]}>Email Address</Text>
+                  <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)', borderColor: currentTheme.border }]}>
+                    <Ionicons name="mail-outline" size={20} color={currentTheme.primary} style={styles.inputIcon} />
+                    <TextInput
+                      style={[styles.input, { color: currentTheme.text }]}
+                      placeholder="Enter your email"
+                      placeholderTextColor={isDarkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'}
+                      value={email}
+                      onChangeText={setEmail}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
                     />
-                    <Text style={loginStyles.roleSelectorText}>
-                      {role === 'USER' ? 'Reader' : 'Seller'}
-                    </Text>
                   </View>
-                  <Ionicons 
-                    name={showRoleDropdown ? 'chevron-up' : 'chevron-down'} 
-                    size={20} 
-                    color="#666" 
-                  />
+                </View>
+
+                {/* Password Input */}
+                <View style={styles.inputWrapper}>
+                  <Text style={[styles.inputLabel, { color: currentTheme.textSecondary }]}>Password</Text>
+                  <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)', borderColor: currentTheme.border }]}>
+                    <Ionicons name="lock-closed-outline" size={20} color={currentTheme.primary} style={styles.inputIcon} />
+                    <TextInput
+                      style={[styles.input, { color: currentTheme.text }]}
+                      placeholder="Enter your password"
+                      placeholderTextColor={isDarkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'}
+                      secureTextEntry={!showPassword}
+                      value={password}
+                      onChangeText={setPassword}
+                    />
+                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                      <Ionicons
+                        name={showPassword ? "eye-off-outline" : "eye-outline"}
+                        size={20}
+                        color={currentTheme.textSecondary}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                <TouchableOpacity style={styles.forgotPassword}>
+                  <Text style={[styles.forgotPasswordText, { color: currentTheme.primary }]}>Forgot Password?</Text>
                 </TouchableOpacity>
 
-                {showRoleDropdown && (
-                  <View style={loginStyles.roleDropdown}>
-                    <TouchableOpacity
-                      style={[
-                        loginStyles.roleOption,
-                        role === 'USER' && loginStyles.roleOptionSelected
-                      ]}
-                      onPress={() => handleRoleSelect('USER')}
-                    >
-                      <Ionicons name="person-outline" size={20} color="#8B5CF6" />
-                      <Text style={loginStyles.roleOptionText}>Reader</Text>
-                      {role === 'USER' && (
-                        <Ionicons name="checkmark" size={16} color="#8B5CF6" />
-                      )}
-                    </TouchableOpacity>
-                    
-                    <TouchableOpacity
-                      style={[
-                        loginStyles.roleOption,
-                        role === 'SELLER' && loginStyles.roleOptionSelected
-                      ]}
-                      onPress={() => handleRoleSelect('SELLER')}
-                    >
-                      <Ionicons name="storefront-outline" size={20} color="#8B5CF6" />
-                      <Text style={loginStyles.roleOptionText}>Seller</Text>
-                      {role === 'SELLER' && (
-                        <Ionicons name="checkmark" size={16} color="#8B5CF6" />
-                      )}
-                    </TouchableOpacity>
-                  </View>
-                )}
+                <TouchableOpacity
+                  style={[styles.loginButton, { backgroundColor: currentTheme.primary }]}
+                  onPress={handleLogin}
+                  disabled={isLoading}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.loginButtonText}>{isLoading ? 'Logging In...' : 'Log In'}</Text>
+                </TouchableOpacity>
               </View>
 
-              {/* Email Input */}
-              <View style={loginStyles.loginInputContainer}>
-                <TextInput
-                  style={[
-                    loginStyles.loginInput, 
-                    emailError && loginStyles.loginInputError
-                  ]}
-                  placeholder="Enter your email"
-                  value={email}
-                  onChangeText={handleEmailChange}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  placeholderTextColor="#999"
-                  editable={!isLoading}
-                />
-                {email.length > 0 && isValidEmail(email) && !emailError && (
-                  <Ionicons name="checkmark-circle" size={20} color="#2ed573" style={loginStyles.loginInputIcon} />
-                )}
-                {emailError && (
-                  <Text style={loginStyles.errorText}>{emailError}</Text>
-                )}
+              {/* Social Login */}
+              <View style={styles.dividerContainer}>
+                <View style={[styles.divider, { backgroundColor: currentTheme.border }]} />
+                <Text style={[styles.dividerText, { color: currentTheme.textSecondary }]}>OR CONTINUE WITH</Text>
+                <View style={[styles.divider, { backgroundColor: currentTheme.border }]} />
               </View>
 
-              {/* Password Input */}
-              <View style={loginStyles.loginInputContainer}>
-                <View style={loginStyles.passwordContainer}>
-                  <TextInput
-                    style={[
-                      loginStyles.loginInput, 
-                      loginStyles.passwordInput,
-                      passwordError && loginStyles.loginInputError
-                    ]}
-                    placeholder="Enter your password"
-                    value={password}
-                    onChangeText={handlePasswordChange}
-                    secureTextEntry={!showPassword}
-                    autoCapitalize="none"
-                    placeholderTextColor="#999"
-                    editable={!isLoading}
-                  />
-                  <TouchableOpacity
-                    style={loginStyles.eyeButton}
-                    onPress={() => setShowPassword(!showPassword)}
-                    disabled={isLoading}
-                  >
-                    <Ionicons
-                      name={showPassword ? 'eye-outline' : 'eye-off-outline'}
-                      size={20}
-                      color="#999"
-                    />
-                  </TouchableOpacity>
-                </View>
-                {passwordError && (
-                  <Text style={loginStyles.errorText}>{passwordError}</Text>
-                )}
+              <View style={styles.socialContainer}>
+                <TouchableOpacity style={[styles.socialButton, { backgroundColor: currentTheme.card, borderColor: currentTheme.border }]}>
+                  <Ionicons name="logo-google" size={24} color="#DB4437" />
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.socialButton, { backgroundColor: currentTheme.card, borderColor: currentTheme.border }]}>
+                  <Ionicons name="logo-apple" size={24} color={currentTheme.text} />
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.socialButton, { backgroundColor: currentTheme.card, borderColor: currentTheme.border }]}>
+                  <Ionicons name="logo-facebook" size={24} color="#4267B2" />
+                </TouchableOpacity>
               </View>
 
-              <TouchableOpacity
-                style={[loginStyles.signInButton, isLoading && loginStyles.disabledButton]}
-                onPress={handleLogin}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <View style={loginStyles.loadingContainer}>
-                    <ActivityIndicator size="small" color="#fff" />
-                    <Text style={loginStyles.signInButtonText}>Signing In...</Text>
-                  </View>
-                ) : (
-                  <Text style={loginStyles.signInButtonText}>Sign In</Text>
-                )}
-              </TouchableOpacity>
-
-              <TouchableOpacity 
-                style={loginStyles.forgotPasswordButton}
-                onPress={handleForgotPassword}
-                disabled={isLoading}
-              >
-                <Text style={loginStyles.forgotPasswordText}>Forgot your password?</Text>
-              </TouchableOpacity>
-            </View>
+              {/* Footer */}
+              <View style={styles.footer}>
+                <Text style={[styles.footerText, { color: currentTheme.textSecondary }]}>Don't have an account? </Text>
+                <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+                  <Text style={[styles.registerLink, { color: currentTheme.primary }]}>Register Now</Text>
+                </TouchableOpacity>
+              </View>
+            </Animated.View>
           </ScrollView>
-        </View>
-      </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+    </View>
   );
-}
+};
+
+export default LoginScreen;
