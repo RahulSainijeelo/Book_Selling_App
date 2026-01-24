@@ -55,10 +55,7 @@ export default StyleSheet.create({
         shadowOffset: { width: 0, height: 10 },
         shadowOpacity: 0.08,
         shadowRadius: 20,
-      },
-      android: {
-        elevation: 6,
-      },
+      }
     }),
   },
   outOfStockItem: {
@@ -147,9 +144,6 @@ export default StyleSheet.create({
         shadowOpacity: 0.05,
         shadowRadius: 20,
       },
-      android: {
-        elevation: 4,
-      },
     }),
   },
   summaryTitle: {
@@ -212,9 +206,6 @@ export default StyleSheet.create({
         shadowOffset: { width: 0, height: 10 },
         shadowOpacity: 0.1,
         shadowRadius: 20,
-      },
-      android: {
-        elevation: 10,
       },
     }),
   },

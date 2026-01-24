@@ -10,7 +10,6 @@ export default StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.07,
     shadowRadius: 8,
-    elevation: 2,
   },
   header: {
     fontSize: 15,

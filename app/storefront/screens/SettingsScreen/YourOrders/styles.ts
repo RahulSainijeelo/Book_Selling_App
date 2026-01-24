@@ -85,9 +85,6 @@ export default StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 10,
       },
-      android: {
-        elevation: 4,
-      },
     }),
   },
   orderHeader: {
@@ -180,7 +177,6 @@ export default StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
-    elevation: 4,
   },
   trackButtonText: {
     color: '#FFFFFF',

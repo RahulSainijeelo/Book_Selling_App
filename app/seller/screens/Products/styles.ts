@@ -1,10 +1,10 @@
 import { StyleSheet } from "react-native";
 
 export default StyleSheet.create({
-  container: { 
-    flex: 1, 
-    backgroundColor: '#f8f9fa', 
-    paddingHorizontal: 16 
+  container: {
+    flex: 1,
+    backgroundColor: '#f8f9fa',
+    paddingHorizontal: 16
   },
   headerContainer: {
     paddingTop: 20,
@@ -30,7 +30,6 @@ export default StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
-    elevation: 3,
   },
   bookCover: {
     width: 90,
@@ -110,10 +109,9 @@ export default StyleSheet.create({
     shadowOpacity: 0.3,
     shadowOffset: { width: 0, height: 8 },
     shadowRadius: 12,
-    elevation: 8,
   },
-  disabledButton:{
-     opacity:0.7
+  disabledButton: {
+    opacity: 0.7
   },
   loadingFooter: {
     flexDirection: 'row',

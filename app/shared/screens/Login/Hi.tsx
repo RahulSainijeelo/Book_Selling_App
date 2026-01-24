@@ -32,7 +32,7 @@ export default function LoginScreen() {
     }
 
     setIsLoading(true);
-    
+
     // Simulate login API call
     setTimeout(() => {
       setIsLoading(false);
@@ -58,7 +58,7 @@ export default function LoginScreen() {
           >
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
-          
+
           <View style={styles.headerRight}>
             <Text style={styles.headerText}>Don't have an account?</Text>
             <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
@@ -229,7 +229,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
   },
   disabledButton: {
     opacity: 0.7,

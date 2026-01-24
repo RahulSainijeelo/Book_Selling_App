@@ -160,9 +160,6 @@ export default StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 15,
       },
-      android: {
-        elevation: 6,
-      },
     }),
   },
   outOfStockCard: {
@@ -179,7 +176,6 @@ export default StyleSheet.create({
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 4,
   },
   bookImageContainer: {
     position: 'relative',
@@ -193,9 +189,6 @@ export default StyleSheet.create({
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.05,
         shadowRadius: 8,
-      },
-      android: {
-        elevation: 3,
       },
     }),
   },
@@ -234,7 +227,6 @@ export default StyleSheet.create({
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowRadius: 5,
-    elevation: 3,
   },
   gridBookInfo: {
     flex: 1,
@@ -317,10 +309,7 @@ export default StyleSheet.create({
         shadowOffset: { width: 0, height: 6 },
         shadowOpacity: 0.1,
         shadowRadius: 12,
-      },
-      android: {
-        elevation: 4,
-      },
+      }
     }),
   },
   checkbox: {
@@ -432,7 +421,6 @@ export default StyleSheet.create({
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.2,
     shadowRadius: 20,
-    elevation: 10,
   },
   selectionActionButton: {
     flexDirection: 'row',
@@ -469,7 +457,6 @@ export default StyleSheet.create({
     shadowOffset: { width: 0, height: -10 },
     shadowOpacity: 0.1,
     shadowRadius: 20,
-    elevation: 20,
   },
   sortHeader: {
     flexDirection: 'row',
@@ -534,7 +521,6 @@ export default StyleSheet.create({
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowRadius: 10,
-    elevation: 5,
   },
   browseButtonText: {
     color: COLORS.primary,

@@ -43,10 +43,7 @@ export default StyleSheet.create({
                 shadowOpacity: 0.1,
                 shadowRadius: 20,
                 shadowOffset: { width: 0, height: 10 },
-            },
-            android: {
-                elevation: 10,
-            },
+            }
         }),
     },
     stickyContent: {
@@ -103,9 +100,6 @@ export default StyleSheet.create({
                 shadowOpacity: 0.1,
                 shadowRadius: 8,
                 shadowOffset: { width: 0, height: 4 },
-            },
-            android: {
-                elevation: 4,
             },
         }),
     },
@@ -273,7 +267,7 @@ export default StyleSheet.create({
     },
 
     booksGrid: {
-        paddingHorizontal: 24,
+        paddingHorizontal: 2,
     },
     gridBookCard: {
         width: '100%',
@@ -289,9 +283,6 @@ export default StyleSheet.create({
                 shadowOpacity: 0.1,
                 shadowRadius: 15,
                 shadowOffset: { width: 0, height: 8 },
-            },
-            android: {
-                elevation: 6,
             },
         }),
     },

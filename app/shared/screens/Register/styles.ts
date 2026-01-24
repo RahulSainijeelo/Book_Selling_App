@@ -60,9 +60,7 @@ export default StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 10,
       },
-      android: {
-        elevation: 6,
-      },
+
     }),
   },
   headerRight: {
@@ -123,9 +121,6 @@ export default StyleSheet.create({
         shadowOffset: { width: 0, height: 12 },
         shadowOpacity: 0.1,
         shadowRadius: 30,
-      },
-      android: {
-        elevation: 8,
       },
     }),
   },
@@ -214,9 +209,6 @@ export default StyleSheet.create({
         shadowOpacity: 0.35,
         shadowRadius: 15,
       },
-      android: {
-        elevation: 8,
-      },
     }),
   },
   continueButtonText: {
@@ -270,9 +262,6 @@ export default StyleSheet.create({
         shadowOffset: { width: 0, height: 10 },
         shadowOpacity: 0.35,
         shadowRadius: 15,
-      },
-      android: {
-        elevation: 8,
       },
     }),
   },

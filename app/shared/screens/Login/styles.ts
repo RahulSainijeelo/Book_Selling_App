@@ -64,9 +64,6 @@ export default StyleSheet.create({
         shadowOpacity: 0.3,
         shadowRadius: 18,
       },
-      android: {
-        elevation: 10,
-      },
     }),
   },
   title: {
@@ -92,9 +89,6 @@ export default StyleSheet.create({
         shadowOffset: { width: 0, height: 12 },
         shadowOpacity: 0.1,
         shadowRadius: 25,
-      },
-      android: {
-        elevation: 8,
       },
     }),
   },
@@ -145,9 +139,6 @@ export default StyleSheet.create({
         shadowOpacity: 0.35,
         shadowRadius: 15,
       },
-      android: {
-        elevation: 10,
-      },
     }),
   },
   loginButtonText: {
@@ -191,9 +182,6 @@ export default StyleSheet.create({
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.05,
         shadowRadius: 8,
-      },
-      android: {
-        elevation: 2,
       },
     }),
   },

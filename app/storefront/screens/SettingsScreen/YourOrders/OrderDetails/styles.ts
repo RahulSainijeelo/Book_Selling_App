@@ -88,9 +88,6 @@ export default StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 15,
       },
-      android: {
-        elevation: 6,
-      },
     }),
   },
 
@@ -283,7 +280,6 @@ export default StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 15,
-    elevation: 8,
   },
   reorderButtonText: {
     color: '#FFFFFF',
