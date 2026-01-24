@@ -99,7 +99,6 @@ export default StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
   },
   bookImageContainer: {
     position: 'relative',
@@ -181,7 +180,6 @@ export default StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
   },
   listImageContainer: {
     position: 'relative',

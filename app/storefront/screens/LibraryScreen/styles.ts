@@ -57,9 +57,6 @@ export default StyleSheet.create({
                 shadowOpacity: 0.05,
                 shadowRadius: 15,
             },
-            android: {
-                elevation: 4,
-            },
         }),
     },
     bookCover: {

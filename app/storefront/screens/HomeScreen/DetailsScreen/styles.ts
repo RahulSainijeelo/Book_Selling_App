@@ -54,9 +54,6 @@ export default StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 25,
       },
-      android: {
-        elevation: 12,
-      },
     }),
     position: 'relative',
   },
@@ -101,9 +98,6 @@ export default StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 8,
       },
-      android: {
-        elevation: 6,
-      },
     }),
     borderWidth: 1.5,
   },
@@ -119,9 +113,6 @@ export default StyleSheet.create({
         shadowOffset: { width: 0, height: 10 },
         shadowOpacity: 0.05,
         shadowRadius: 15,
-      },
-      android: {
-        elevation: 4,
       },
     }),
   },
@@ -263,9 +254,6 @@ export default StyleSheet.create({
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.1,
         shadowRadius: 8,
-      },
-      android: {
-        elevation: 3,
       },
     }),
   },
@@ -462,10 +450,7 @@ export default StyleSheet.create({
         shadowOffset: { width: 0, height: 10 },
         shadowOpacity: 0.15,
         shadowRadius: 20,
-      },
-      android: {
-        elevation: 12,
-      },
+      }
     }),
   },
   addToCartButton: {
@@ -495,9 +480,6 @@ export default StyleSheet.create({
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.2,
         shadowRadius: 10,
-      },
-      android: {
-        elevation: 6,
       },
     }),
   },

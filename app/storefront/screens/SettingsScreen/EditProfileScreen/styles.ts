@@ -59,9 +59,6 @@ export default StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 20,
       },
-      android: {
-        elevation: 8,
-      },
     }),
   },
 
@@ -107,7 +104,6 @@ export default StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 15,
-    elevation: 8,
   },
   backButtonText: {
     color: '#FFFFFF',

@@ -42,13 +42,15 @@ export default function TabNavigator() {
           return <Ionicons name={iconName} size={24} color={color} />;
         },
         tabBarActiveTintColor: currentTheme.primary,
-        tabBarInactiveTintColor: isDarkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+        tabBarInactiveTintColor: isDarkMode ? 'rgba(255, 255, 255, 0.62)' : 'rgba(0,0,0,0.4)',
         tabBarStyle: {
           position: 'absolute',
           bottom: Platform.OS === 'ios' ? 30 : 20,
           left: 20,
           right: 20,
-          height: 70,
+          height: 50,
+          width: "85%",
+          marginLeft: "7%",
           backgroundColor: 'transparent',
           borderTopWidth: 0,
           elevation: 0,

@@ -35,7 +35,6 @@ export default StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
   },
   productHeader: {
     flexDirection: 'row',
@@ -131,7 +130,6 @@ export default StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
   },
   statIcon: {
     width: 48,
@@ -165,7 +163,6 @@ export default StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
   },
   trendItem: {
     flex: 1,
@@ -228,7 +225,6 @@ export default StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
   },
   managementRow: {
     flexDirection: 'row',
@@ -301,7 +297,6 @@ export default StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
   },
   statusButton: {
     flex: 1,
@@ -336,7 +331,6 @@ export default StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
     flexDirection: 'row',
     justifyContent: 'center',
   },
