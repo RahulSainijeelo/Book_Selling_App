@@ -33,12 +33,12 @@ interface Book {
 }
 
 const categories = [
-  { id: 1, name: 'Fiction', color: '#FF6B6B' },
-  { id: 2, name: 'Programming', color: '#4ECDC4' },
-  { id: 3, name: 'Science', color: '#45B7D1' },
-  { id: 4, name: 'History', color: '#96CEB4' },
-  { id: 5, name: 'Biography', color: '#FECA57' },
-  { id: 6, name: 'Self-Help', color: '#FF9FF3' },
+  { id: 1, name: 'Fiction', color: '#FF6B6B', icon: 'book' },
+  { id: 2, name: 'Programming', color: '#4ECDC4', icon: 'code-working' },
+  { id: 3, name: 'Science', color: '#45B7D1', icon: 'flask' },
+  { id: 4, name: 'History', color: '#96CEB4', icon: 'library' },
+  { id: 5, name: 'Biography', color: '#FECA57', icon: 'person' },
+  { id: 6, name: 'Self-Help', color: '#FF9FF3', icon: 'sunny' },
 ];
 
 export const mockBooks: Book[] = [
@@ -168,31 +168,64 @@ export default function UserHomeScreen() {
     </TouchableOpacity>
   );
 
-  const FeaturedBookCard = ({ book }: { book: Book }) => (
+  const BentoHero = ({ book }: { book: Book }) => (
     <TouchableOpacity
-      style={[styles.featuredCard, { borderColor: currentTheme.border }]}
+      style={[styles.bentoHero, { borderColor: currentTheme.border }]}
       activeOpacity={0.9}
       onPress={() => navigation.navigate('Book Details', { bookId: book.id })}
     >
-      <Image source={{ uri: book.coverUrl }} style={styles.featuredImage} />
-      <View style={[styles.featuredOverlay, { backgroundColor: 'rgba(0,0,0,0.35)' }]}>
-        <View style={styles.featuredBadge}>
-          <Text style={styles.featuredBadgeText}>FEATURED</Text>
-        </View>
-        <View style={styles.featuredInfo}>
-          <Text style={styles.featuredTitle} numberOfLines={2}>{book.title}</Text>
-          <Text style={styles.featuredAuthor} numberOfLines={1}>by {book.author}</Text>
-          <View style={styles.featuredFooter}>
-            <View style={styles.ratingContainer}>
-              <Ionicons name="star" size={16} color="#FFD700" />
-              <Text style={styles.featuredRating}>{book.rating}</Text>
-            </View>
-            <Text style={styles.featuredPrice}>${book.price}</Text>
-          </View>
-        </View>
+      <Image source={{ uri: book.coverUrl }} style={styles.heroImage} />
+      <View style={[styles.heroOverlay, { backgroundColor: isDarkMode ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.25)' }]}>
+        <Text style={[styles.heroTag, { color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.9)' }]}>EDITOR'S CHOICE</Text>
+        <Text style={styles.heroTitle} numberOfLines={2}>{book.title}</Text>
       </View>
     </TouchableOpacity>
   );
+
+  const BentoCard = ({ book, variant = 'small' }: { book: Book; variant?: 'small' | 'wide' | 'tall' }) => {
+    const cardStyle = variant === 'wide' ? styles.wideCard : variant === 'tall' ? styles.tallCard : styles.smallCard;
+
+    return (
+      <TouchableOpacity
+        style={[
+          styles.bentoCard,
+          cardStyle,
+          { backgroundColor: currentTheme.card, borderColor: currentTheme.border }
+        ]}
+        activeOpacity={0.8}
+        onPress={() => navigation.navigate('Book Details', { bookId: book.id })}
+      >
+        {variant === 'tall' ? (
+          <>
+            <View style={[styles.bookImageContainer, { height: 200, marginBottom: 12 }]}>
+              <Image source={{ uri: book.coverUrl }} style={styles.bookImage} />
+            </View>
+            <Text style={[styles.bentoCardTitle, { color: currentTheme.text }]} numberOfLines={2}>{book.title}</Text>
+            <Text style={[styles.bentoCardAuthor, { color: currentTheme.textSecondary }]} numberOfLines={1}>{book.author}</Text>
+            <Text style={[styles.bentoCardPrice, { color: currentTheme.primary }]}>${book.price}</Text>
+          </>
+        ) : variant === 'wide' ? (
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View style={[styles.bookImageContainer, { width: 80, height: 110, marginBottom: 0, marginRight: 16 }]}>
+              <Image source={{ uri: book.coverUrl }} style={styles.bookImage} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.bentoCardTitle, { color: currentTheme.text }]} numberOfLines={2}>{book.title}</Text>
+              <Text style={[styles.bentoCardAuthor, { color: currentTheme.textSecondary }]}>{book.author}</Text>
+              <Text style={[styles.bentoCardPrice, { color: currentTheme.primary }]}>${book.price}</Text>
+            </View>
+          </View>
+        ) : (
+          <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+            <Ionicons name="sparkles" size={24} color={currentTheme.primary} style={{ marginBottom: 8 }} />
+            <Text style={[styles.bentoCardTitle, { fontSize: 14, textAlign: 'center', color: currentTheme.text }]} numberOfLines={2}>
+              {book.title}
+            </Text>
+          </View>
+        )}
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: isDarkMode ? currentTheme.background[1] : currentTheme.background[0] }]}>
@@ -262,92 +295,120 @@ export default function UserHomeScreen() {
         </View>
 
         <View style={styles.content}>
-          {/* Featured Section */}
-          <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: currentTheme.text }]}>Featured Today</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View style={styles.featuredContainer}>
-                {popularBooks.slice(0, 3).map((book) => (
-                  <FeaturedBookCard key={book.id} book={book} />
+          <View style={styles.bentoContainer}>
+            {/* Categories Section */}
+            <View style={{ marginBottom: 16 }}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={{ marginHorizontal: -20 }}
+                contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}
+              >
+                <TouchableOpacity
+                  style={[
+                    styles.categoryChip,
+                    { backgroundColor: currentTheme.card, borderColor: currentTheme.border },
+                    selectedCategory === 'All' && { backgroundColor: currentTheme.primary, borderColor: currentTheme.primary }
+                  ]}
+                  onPress={() => setSelectedCategory('All')}
+                >
+                  <Ionicons name="apps-outline" size={18} color={selectedCategory === 'All' ? '#FFF' : currentTheme.primary} />
+                  <Text style={[
+                    styles.categoryChipText,
+                    { color: currentTheme.text },
+                    selectedCategory === 'All' && { color: '#FFF' }
+                  ]}>All</Text>
+                </TouchableOpacity>
+
+                {categories.map((category) => (
+                  <TouchableOpacity
+                    key={category.id}
+                    style={[
+                      styles.categoryChip,
+                      { backgroundColor: currentTheme.card, borderColor: currentTheme.border },
+                      selectedCategory === category.name && { backgroundColor: currentTheme.primary, borderColor: currentTheme.primary }
+                    ]}
+                    onPress={() => setSelectedCategory(category.name)}
+                  >
+                    <Ionicons name={category.icon as any} size={18} color={selectedCategory === category.name ? '#FFF' : currentTheme.primary} />
+                    <Text style={[
+                      styles.categoryChipText,
+                      { color: currentTheme.text },
+                      selectedCategory === category.name && { color: '#FFF' }
+                    ]}>
+                      {category.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+
+            {/* Hero Section */}
+            {popularBooks.length > 0 && <BentoHero book={popularBooks[0]} />}
+
+            {/* Main Bento Grid */}
+            <View style={styles.bentoRow}>
+              {/* Left Column: Tall Card */}
+              {newBooks.length > 0 && (
+                <View style={styles.bentoColumn}>
+                  <BentoCard book={newBooks[0]} variant="tall" />
+                </View>
+              )}
+
+              {/* Right Column: Two Squares */}
+              <View style={styles.bentoColumn}>
+                {filteredBooks.length > 2 && (
+                  <>
+                    <BentoCard book={filteredBooks[0]} variant="small" />
+                    <BentoCard book={filteredBooks[1]} variant="small" />
+                  </>
+                )}
+              </View>
+            </View>
+
+            {/* Mid Section: Wide Banner */}
+            {popularBooks.length > 1 && (
+              <BentoCard book={popularBooks[1]} variant="wide" />
+            )}
+
+            {/* Bottom Section: Categories & Extras */}
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionTitle, { fontSize: 22, marginTop: 12, color: currentTheme.text }]}>Explore More</Text>
+            </View>
+
+            <View style={styles.bentoRow}>
+              <View style={styles.bentoColumn}>
+                {filteredBooks.length > 3 && <BentoCard book={filteredBooks[2]} variant="small" />}
+              </View>
+              <View style={styles.bentoColumn}>
+                {filteredBooks.length > 4 && <BentoCard book={filteredBooks[3]} variant="small" />}
+              </View>
+            </View>
+
+            {/* Horizontal New Releases Scroll as a "Discovery Tape" */}
+            <View style={[styles.sectionHeader, { marginBottom: 12, marginTop: 12 }]}>
+              <Text style={[styles.sectionTitle, { fontSize: 20, color: currentTheme.text }]}>Fresh Finds</Text>
+              <TouchableOpacity onPress={() => navigation.navigate("See All", "Fiction")}>
+                <Text style={[styles.seeAllText, { color: currentTheme.primary }]}>See All</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -20 }}>
+              <View style={{ flexDirection: 'row', paddingHorizontal: 20, gap: 12 }}>
+                {mockBooks.slice(0, 5).map((book) => (
+                  <TouchableOpacity
+                    key={book.id}
+                    style={{ width: 100, alignItems: 'center' }}
+                    onPress={() => navigation.navigate('Book Details', { bookId: book.id })}
+                  >
+                    <Image source={{ uri: book.coverUrl }} style={{ width: 90, height: 130, borderRadius: 16 }} />
+                    <Text style={{ fontSize: 12, color: currentTheme.text, marginTop: 6, textAlign: 'center' }} numberOfLines={1}>{book.title}</Text>
+                  </TouchableOpacity>
                 ))}
               </View>
             </ScrollView>
           </View>
 
-          {/* Categories */}
-          <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: currentTheme.text }]}>Browse Categories</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesScroll}>
-              <TouchableOpacity
-                style={[
-                  styles.categoryItem,
-                  { backgroundColor: currentTheme.card, borderColor: currentTheme.border },
-                  selectedCategory === 'All' && { backgroundColor: currentTheme.primary, borderColor: currentTheme.primary }
-                ]}
-                onPress={() => setSelectedCategory('All')}
-              >
-                <Text style={[
-                  styles.categoryName,
-                  { color: currentTheme.text },
-                  selectedCategory === 'All' && { color: '#FFF' }
-                ]}>All</Text>
-              </TouchableOpacity>
-              {categories.map((category) => (
-                <TouchableOpacity
-                  key={category.id}
-                  style={[
-                    styles.categoryItem,
-                    { backgroundColor: currentTheme.card, borderColor: currentTheme.border },
-                    selectedCategory === category.name && { backgroundColor: currentTheme.primary, borderColor: currentTheme.primary }
-                  ]}
-                  onPress={() => setSelectedCategory(category.name)}
-                >
-                  <Text style={[
-                    styles.categoryName,
-                    { color: currentTheme.text },
-                    selectedCategory === category.name && { color: '#FFF' }
-                  ]}>
-                    {category.name}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-
-            <View style={styles.booksGrid}>
-              {filteredBooks.slice(0, 6).map((book, index) => (
-                <BookCard
-                  key={book.id}
-                  book={book}
-                  style={[styles.gridBookCard, { marginRight: index % 2 === 0 ? 8 : 0 }]}
-                />
-              ))}
-            </View>
-          </View>
-
-          {/* New Releases */}
-          {newBooks.length > 0 && (
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Text style={[styles.sectionTitle, { color: currentTheme.text }]}>New Releases</Text>
-                <TouchableOpacity onPress={() => navigation.navigate("See All", "Fiction")}>
-                  <Text style={[styles.seeAllText, { color: currentTheme.primary }]}>See All</Text>
-                </TouchableOpacity>
-              </View>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.bookScroll}>
-                <View style={styles.horizontalList}>
-                  {newBooks.map((book) => (
-                    <BookCard
-                      key={book.id}
-                      book={book}
-                      style={styles.horizontalBookCard}
-                    />
-                  ))}
-                </View>
-              </ScrollView>
-            </View>
-          )}
-
-          <View style={{ height: 100 }} />
+          <View style={{ height: 15 }} />
         </View>
       </Animated.ScrollView>
     </View>
