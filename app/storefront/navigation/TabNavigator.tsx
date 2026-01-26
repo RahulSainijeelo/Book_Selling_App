@@ -76,8 +76,8 @@ export default function TabNavigator() {
               style={[
                 props.style,
                 styles.tabButton,
-                { backgroundColor: props.accessibilityState?.selected ? (isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,1)') : currentTheme.card },
-                { borderColor: props.accessibilityState?.selected ? currentTheme.primary : currentTheme.border }
+                { backgroundColor: props.accessibilityState?.selected ? (isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,1)') : currentTheme.tabButton },
+                { borderColor: props.accessibilityState?.selected ? currentTheme.primary : currentTheme.tabBorder }
               ]}
             />
           )
@@ -93,8 +93,8 @@ export default function TabNavigator() {
               style={[
                 props.style,
                 styles.tabButton,
-                { backgroundColor: props.accessibilityState?.selected ? (isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,1)') : currentTheme.card },
-                { borderColor: props.accessibilityState?.selected ? currentTheme.primary : currentTheme.border }
+                { backgroundColor: props.accessibilityState?.selected ? (isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,1)') : currentTheme.tabButton },
+                { borderColor: props.accessibilityState?.selected ? currentTheme.primary : currentTheme.tabBorder }
               ]}
             />
           )
@@ -110,8 +110,8 @@ export default function TabNavigator() {
               style={[
                 props.style,
                 styles.tabButton,
-                { backgroundColor: props.accessibilityState?.selected ? (isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,1)') : currentTheme.card },
-                { borderColor: props.accessibilityState?.selected ? currentTheme.primary : currentTheme.border }
+                { backgroundColor: props.accessibilityState?.selected ? (isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,1)') : currentTheme.tabButton },
+                { borderColor: props.accessibilityState?.selected ? currentTheme.primary : currentTheme.tabBorder }
               ]}
             />
           )
@@ -127,8 +127,8 @@ export default function TabNavigator() {
               style={[
                 props.style,
                 styles.tabButton,
-                { backgroundColor: props.accessibilityState?.selected ? (isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,1)') : currentTheme.card },
-                { borderColor: props.accessibilityState?.selected ? currentTheme.primary : currentTheme.border }
+                { backgroundColor: props.accessibilityState?.selected ? (isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,1)') : currentTheme.tabButton },
+                { borderColor: props.accessibilityState?.selected ? currentTheme.primary : currentTheme.tabBorder }
               ]}
             />
           )

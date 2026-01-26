@@ -11,6 +11,7 @@ export const THEME = {
         shape2: '#C084FC',
         iconBg: 'rgba(139, 92, 246, 0.1)',
         tabButton: 'rgba(255, 255, 255, 1)',
+        tabBorder: 'rgba(14, 124, 124, 0.17)',
     },
     dark: {
         background: ['#020617', '#0F172A'],
@@ -23,6 +24,7 @@ export const THEME = {
         shape1: '#4C1D95',
         shape2: '#7C3AED',
         iconBg: 'rgba(167, 139, 250, 0.15)',
-        tabButton: 'rgba(255, 255, 255, 0.75)',
+        tabButton: 'rgba(0, 0, 0, 1)',
+        tabBorder: 'rgba(163, 163, 163, 0.64)',
     },
 };

@@ -44,14 +44,17 @@ export default function AppNavigator() {
             />
             <Stack.Screen
                 name="Your Orders"
+                options={{ headerShown: false }}
                 component={YourOrdersScreen}
             />
             <Stack.Screen
                 name="Order Details"
+                options={{ headerShown: false }}
                 component={OrderDetailsScreen}
             />
             <Stack.Screen
                 name="Favorites"
+                options={{ headerShown: false }}
                 component={FavoritesScreen}
             />
             <Stack.Screen

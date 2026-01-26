@@ -266,6 +266,96 @@ export default StyleSheet.create({
         fontWeight: '800',
     },
 
+    // Bento Grid System
+    bentoContainer: {
+        paddingHorizontal: 20,
+        gap: 12,
+    },
+    bentoRow: {
+        flexDirection: 'row',
+        gap: 12,
+    },
+    bentoColumn: {
+        flex: 1,
+        gap: 12,
+    },
+    bentoHero: {
+        width: '100%',
+        height: 280,
+        borderRadius: 36,
+        overflow: 'hidden',
+        borderWidth: 1.5,
+        marginBottom: 8,
+    },
+    heroImage: {
+        width: '100%',
+        height: '100%',
+        resizeMode: 'cover',
+    },
+    heroOverlay: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: '70%',
+        padding: 24,
+        justifyContent: 'flex-end',
+    },
+    heroTag: {
+        fontSize: 12,
+        fontWeight: '900',
+        textTransform: 'uppercase',
+        letterSpacing: 2,
+        marginBottom: 8,
+    },
+    heroTitle: {
+        fontSize: 32,
+        fontWeight: '900',
+        color: '#fff',
+        letterSpacing: -1,
+        lineHeight: 36,
+    },
+
+    bentoCard: {
+        borderRadius: 28,
+        borderWidth: 1.5,
+        overflow: 'hidden',
+    },
+    wideCard: {
+        flex: 2,
+        height: 160,
+        padding: 20,
+        justifyContent: 'center',
+    },
+    tallCard: {
+        flex: 1,
+        height: 332, // Matches two small cards + gap
+        padding: 16,
+    },
+    smallCard: {
+        flex: 1,
+        height: 160,
+        padding: 16,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+
+    bentoCardTitle: {
+        fontSize: 18,
+        fontWeight: '900',
+        marginBottom: 4,
+    },
+    bentoCardAuthor: {
+        fontSize: 13,
+        fontWeight: '600',
+    },
+    bentoCardPrice: {
+        fontSize: 16,
+        fontWeight: '900',
+        marginTop: 8,
+    },
+
+    // Original Grid fallbacks
     booksGrid: {
         paddingHorizontal: 2,
     },
@@ -371,5 +461,19 @@ export default StyleSheet.create({
     },
     bookScroll: {
         marginTop: 0,
+    },
+    // Category Chips
+    categoryChip: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderRadius: 20,
+        borderWidth: 1.5,
+        gap: 8,
+    },
+    categoryChipText: {
+        fontSize: 14,
+        fontWeight: '800',
     },
 });
