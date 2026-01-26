@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
   tabButton: {
     flex: 1,
     height: 56,
-    borderRadius: 30,
+    borderRadius: 80,
     justifyContent: 'center',
     alignItems: 'center',
     marginHorizontal: 4,
